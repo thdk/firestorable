@@ -1,0 +1,1 @@
+Mobx observable wrapper for firebase firestore database.
