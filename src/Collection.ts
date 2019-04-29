@@ -16,7 +16,7 @@ export interface ICollection<T, K = T> extends IDisposable {
     readonly docs: ObservableMap<string, Doc<T, K>>;
     query?: (ref: CollectionReference) => Query;
     getDocs: () => void;
-    updateAsync: (id: string | undefined, data: Partial<T>) => Promise<void>;
+    updateAsync: (id: string | undefined, data: Partial<T> | "delete") => Promise<void>;
     addAsync: (data: T | T[], id?: string) => Promise<string | void>;
     getAsync: (id: string, watch?: boolean) => Promise<Doc<T, K>>;
     deleteAsync: (...ids: string[]) => Promise<void>;
