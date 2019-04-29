@@ -1,8 +1,12 @@
-import { Query, CollectionReference, FirebaseFirestore } from '@firebase/firestore-types';
+import * as firebase from 'firebase/app';
+import 'firebase/firestore';
 
 import { updateAsync, addAsync, getAsync } from "firestore-ts-utils";
 import { observable, ObservableMap, reaction, transaction } from 'mobx';
-import { Doc } from "./Document";
+    import { Doc } from "./Document";
+
+export type CollectionReference = firebase.firestore.CollectionReference;
+export type Query = firebase.firestore.Query;
 
 export interface IDisposable {
     dispose: () => void;
@@ -23,7 +27,7 @@ export interface ICollectionOptions<T, K> {
     realtime?: boolean;
     query?: (ref: CollectionReference) => Query;
     deserialize?: (firestoreData: K) => T;
-    serialize?: (appData: Partial<T>) => Partial<K>;
+    serialize?: (appData: Partial<T> | "delete") => Partial<K>;
 }
 
 export class Collection<T, K = T> implements ICollection<T, K> {
@@ -37,17 +41,17 @@ export class Collection<T, K = T> implements ICollection<T, K> {
     private unsubscribeFirestore?: () => void;
     private readonly queryReactionDisposable: () => void;
     private readonly deserialize: (firestoreData: K) => T;
-    private readonly serialize: (appData: Partial<T>) => Partial<K>;
-    private readonly firestore: FirebaseFirestore;
+    private readonly serialize: (appData: Partial<T> | "delete") => Partial<K>;
+    private readonly firestore: firebase.firestore.Firestore;
 
     private canClearCollection = true;
 
-    constructor(firestore: FirebaseFirestore, getFirestoreCollection: () => CollectionReference, options: ICollectionOptions<T, K> = {}) {
+    constructor(firestore: firebase.firestore.Firestore, getFirestoreCollection: () => CollectionReference, options: ICollectionOptions<T, K> = {}) {
         const {
             realtime = false,
             query,
             deserialize = (x: K) => x as unknown as T,
-            serialize = (x: Partial<T>) => x as unknown as Partial<K>
+            serialize = (x: Partial<T> | "delete") => x as unknown as Partial<K>
         } = options;
 
         this.firestore = firestore;
@@ -113,12 +117,12 @@ export class Collection<T, K = T> implements ICollection<T, K> {
 
     // TODO: when realtime updates is disabled, we must manually update the docs!
     // TODO: add update settings: Merge | Overwrite
-    public updateAsync(id: string | undefined, data: Partial<T>) {
+    public updateAsync(id: string | undefined, data: Partial<T> | "delete") {
         if (id) {
             return this.getAsync(id, false)
                 .then(
                     oldData => {
-                        updateAsync(this.collectionRef, Object.assign(this.serialize({ ...oldData.data, ...data }), { id }))
+                        updateAsync(this.collectionRef, Object.assign(this.serialize(data === "delete" ? data : { ...oldData.data, ...data }), { id }))
                     },
                     () => {
                         // trying to update something that doesn't exist => add it instead
