@@ -1,9 +1,9 @@
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 
-import { updateAsync, addAsync, getAsync } from "firestore-ts-utils";
+import { updateAsync, addAsync, getAsync } from './utils';
 import { observable, ObservableMap, reaction, transaction } from 'mobx';
-    import { Doc } from "./Document";
+import { Doc } from "./Document";
 
 export type CollectionReference = firebase.firestore.CollectionReference;
 export type Query = firebase.firestore.Query;
@@ -16,9 +16,9 @@ export interface ICollection<T, K = T> extends IDisposable {
     readonly docs: ObservableMap<string, Doc<T, K>>;
     query?: (ref: CollectionReference) => Query;
     getDocs: () => void;
-    updateAsync: (id: string | undefined, data: Partial<T> | "delete") => Promise<void>;
+    updateAsync: (data: Partial<T> | "delete", ...ids: string[]) => Promise<void>;
     addAsync: (data: T | T[], id?: string) => Promise<string | void>;
-    getAsync: (id: string, watch?: boolean) => Promise<Doc<T, K>>;
+    getAsync: (id: string, watch?: boolean) => Promise<Doc<T, K & { id: string }>>;
     deleteAsync: (...ids: string[]) => Promise<void>;
     unsubscribeAndClear: () => void;
 }
@@ -117,24 +117,33 @@ export class Collection<T, K = T> implements ICollection<T, K> {
 
     // TODO: when realtime updates is disabled, we must manually update the docs!
     // TODO: add update settings: Merge | Overwrite
-    public updateAsync(id: string | undefined, data: Partial<T> | "delete") {
-        if (id) {
-            return this.getAsync(id, false)
-                .then(
-                    oldData => {
-                        updateAsync(this.collectionRef, Object.assign(this.serialize(data === "delete" ? data : { ...oldData.data, ...data }), { id }))
-                    },
-                    () => {
-                        // trying to update something that doesn't exist => add it instead
-                        addAsync(this.collectionRef, this.serialize(data), id)
-                            .then(() => { }) // convert Promise<string> into Promise<void> :(
-                    });
+    public updateAsync(data: Partial<T> | "delete", ...ids: string[]) {
+        if (ids.length) {
+            return this.getManyAsync(ids, false)
+                .then(docs => Promise.all(
+                    docs.map(
+                        oldData => typeof oldData !== "string"
+                            ? updateAsync(
+                                this.collectionRef, Object.assign(
+                                    this.serialize(data === "delete"
+                                        ? data
+                                        : { ...oldData.data, ...data }
+                                    ),
+                                    { id: oldData.id }
+                                )
+                            )
+                            // trying to update something that doesn't exist => add it instead
+                            : addAsync(this.collectionRef, this.serialize(data), oldData)
+                                .then(() => { }) // convert Promise<string> into Promise<void> :(
+                    )
+                )
+                    .then(() => { })
+                );
         }
         else {
-            return addAsync(this.collectionRef, this.serialize(data), id)
-            .then(() => { })
+            return addAsync(this.collectionRef, this.serialize(data))
+                .then(() => { })
         }
-
     }
 
     // TODO: when realtime updates is disabled, we must manually update the docs!
@@ -157,8 +166,22 @@ export class Collection<T, K = T> implements ICollection<T, K> {
     public getAsync(id: string, watch = true) {
         return getAsync<K>(this.collectionRef, id).then(doc => {
             const { deserialize } = this;
-            return new Doc<T, K>(this.collectionRef, doc, { deserialize, watch }, id);
+            return new Doc<T, K & { id: string }>(this.collectionRef, doc, { deserialize, watch }, id);
         });
+    }
+
+    /**
+     * Returns a promise that resolves with an array of firestore documents
+     * If no document found for a given id that id will be returned in the result array
+     * instead of a document.
+     */
+    // Todo: make sure utils/getAsync does not reject when doc not found by id
+    // It should return null so we do not have to catch (and absorb true errors) here
+    public getManyAsync(ids: string[], watch = true) {
+        return Promise.all(ids.map(id => {
+            return this.getAsync(id, watch)
+                .catch(() => id)
+        }));
     }
 
     // TODO: when realtime updates is disabled, we must manually update the docs!

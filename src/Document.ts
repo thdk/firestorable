@@ -1,7 +1,7 @@
-import { CollectionReference, DocumentReference } from '@firebase/firestore-types';
+import { CollectionReference, DocumentReference } from "@firebase/firestore-types";
 
 import { observable, computed, action } from "mobx";
-import { Undefined, UndefinedValue, isUndefinedValue } from 'mobx-undefined-value';
+import { Undefined, UndefinedValue, isUndefinedValue } from "mobx-undefined-value";
 
 export interface IDocOptions<T, K> {
     deserialize: (firestoreData: K) => T;
@@ -32,7 +32,7 @@ export class Doc<T, K = T> implements IDoc<T> {
         this.id = this.ref.id;
         this.setData(data ? deserialize(data) : null);
 
-        if (watch) this.watch();
+        if (watch) { this.watch(); }
     }
 
     @action
