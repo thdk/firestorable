@@ -4,7 +4,12 @@
   "description": "Mobx observable wrapper for firebase firestore database.",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "emulator": "firebase emulators:start --only firestore",
+    "emulator:exec": "firebase emulators:exec --only firestore",
+    "test": "jest",
+    "test:emulator": "firebase emulators:exec --only firestore jest",
+    "test:emulator:coverage": "firebase emulators:exec --only firestore \"jest --coverage\"",
+    "coverage": "start coverage\\lcov-report\\index.html",
     "build": "tsc"
   },
   "repository": {
@@ -29,13 +34,17 @@
     "mobx": "^5.9.0"
   },
   "dependencies": {
-    "firebase": "^5.10.0",
-    "mobx": "^5.9.0",
+    "firebase": "^7.5.0",
+    "mobx": "^5.15.0",
     "mobx-undefined-value": "^1.0.0"
   },
   "devDependencies": {
     "@firebase/app-types": "^0.3.6",
     "@firebase/firestore-types": "^1.1.0",
-    "typescript": "^3.3.3333"
+    "@firebase/testing": "^0.16.0",
+    "@types/jest": "^24.0.23",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.2.0",
+    "typescript": "^3.3.3"
   }
 }

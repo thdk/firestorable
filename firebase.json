@@ -1,0 +1,9 @@
+{
+    "firestore": {
+    },
+    "emulators": {
+        "firestore": {
+            "port": "999"
+        }
+    }
+}

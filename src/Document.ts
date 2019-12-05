@@ -1,7 +1,6 @@
 import { CollectionReference, DocumentReference } from "@firebase/firestore-types";
 
-import { observable, computed, action } from "mobx";
-import { Undefined, UndefinedValue, isUndefinedValue } from "mobx-undefined-value";
+import { observable, computed, action, IObservableValue } from "mobx";
 
 export interface IDocOptions<T, K> {
     deserialize: (firestoreData: K) => T;
@@ -16,8 +15,8 @@ export interface IDoc<T> {
 }
 
 export class Doc<T, K = T> implements IDoc<T> {
-    @observable
-    private dataField: T | Undefined = UndefinedValue;
+
+    private dataField: IObservableValue<T | undefined> = observable.box(undefined);
 
     private ref: DocumentReference;
     public readonly id: string;
@@ -30,24 +29,24 @@ export class Doc<T, K = T> implements IDoc<T> {
         this.deserialize = deserialize;
         this.ref = id ? collectionRef.doc(id) : collectionRef.doc();
         this.id = this.ref.id;
-        this.setData(data ? deserialize(data) : null);
+        this.setData(data ? deserialize(data) : undefined);
 
         if (watch) { this.watch(); }
     }
 
     @action
-    private setData(data: T | null) {
-        this.dataField = data || UndefinedValue;
+    private setData(data: T | undefined) {
+        this.dataField.set(data);
     }
 
     @computed
     public get data(): T | undefined {
-        return isUndefinedValue(this.dataField) ? undefined : this.dataField;
+        return this.dataField.get();
     }
 
     public watch() {
         this.unwatchDocument = this.ref.onSnapshot(snapshot => {
-            this.dataField = this.deserialize(snapshot.data() as unknown as K);
+            this.dataField.set(this.deserialize(snapshot.data() as unknown as K));
         });
     }
 

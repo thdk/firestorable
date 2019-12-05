@@ -2,7 +2,7 @@
     "compilerOptions": {
       /* Basic Options */
       "target": "es6",
-      "module": "commonjs",
+      "module": "es6",
       "declaration": true,
       "outDir": "./dist",
       /* Strict Type-Checking Options */
