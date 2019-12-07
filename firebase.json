@@ -3,7 +3,7 @@
     },
     "emulators": {
         "firestore": {
-            "port": "999"
+            "port": "8080"
         }
     }
 }
