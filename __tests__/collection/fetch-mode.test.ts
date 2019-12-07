@@ -41,7 +41,7 @@ describe("With fetch mode = auto:", () => {
 
             // Add a dummy observer
             reaction(() => collection.docs, () => {
-                console.log(collection.docs.length);
+                // console.log(collection.docs.length);
             });
 
             // Collection should start loading the documents when it becomes observed
