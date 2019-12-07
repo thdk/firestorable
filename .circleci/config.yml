@@ -12,7 +12,7 @@ jobs:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
           name: update-firebase
-          command: 'sudo npm install -g firebase@7.9.0'
+          command: 'sudo npm install -g firebase-tools@7.9.0'
       - restore_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run: npm install
