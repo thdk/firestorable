@@ -24,7 +24,7 @@ jobs:
           command: npm run test:emulator:coverage
       - store_artifacts:
           path: coverage
-          
+
       - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v1.0.1
 
