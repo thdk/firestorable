@@ -5,6 +5,16 @@ jobs:
       - image: circleci/node:10.0-browsers
     steps:
       - checkout
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: update-firebase
+          command: 'sudo npm install -g firebase@7.9.0'
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
       - run: npm install
       - run:
           name: "Run Jest and Collect Coverage Reports"
