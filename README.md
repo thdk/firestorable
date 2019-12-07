@@ -69,9 +69,10 @@ Above command will start the emulator, run 'jest', and stop the emulator after t
 
 * [mobx](https://mobx.js.org/) - Simple, scalable state management
 * [typescript](https://www.typescriptlang.org/) - Javascript that scales
-* [npm](https://www.npmjs.com/) - Package manager
 * [jest](https://jestjs.io/) - Javascript testing framework
-
+* [firebase](https://firebase.google.com/) - App development platform
+* [npm](https://www.npmjs.com/) - Package manager
+* [circleCI](https://circleci.com/) - Continuous Integration and Delivery
 
 ## Authors
 
