@@ -3,6 +3,7 @@ import { autorun, when, reaction } from 'mobx';
 import { logger, waitAsync } from '../utils';
 import { addItemInBatch, initDatabase, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from '../utils/firestore-utils';
 
+// Add comment
 const { db, collectionRef } = initDatabase("test-auto-fetch", "books");
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
