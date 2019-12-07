@@ -50,7 +50,7 @@ describe("Collection.addAsync", () => {
                     .then(id => {
                         return collectionRef.doc(id).get()
                             .then(snapshot => {
-                                expect(snapshot.exists).toBe(true);
+                                expect(snapshot.exists).toBe(false);
                             });
                     });
             });
