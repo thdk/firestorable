@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  coveralls: coveralls/coveralls@1.0.4
 jobs:
   build:
     docker:
@@ -8,13 +10,9 @@ jobs:
       - run:
           name: update-npm
           command: 'sudo npm install -g npm@latest'
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
           name: update-firebase
           command: 'sudo npm install -g firebase-tools@7.9.0'
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package-lock.json" }}
       - run: npm install
       - run:
           name: "Setup firestore emulator"
@@ -24,7 +22,4 @@ jobs:
           command: npm run test:emulator:coverage
       - store_artifacts:
           path: coverage
-
-      - name: Coveralls GitHub Action
-      uses: coverallsapp/github-action@v1.0.1
-
+      - coveralls/upload
