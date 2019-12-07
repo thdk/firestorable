@@ -17,6 +17,9 @@ jobs:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run: npm install
       - run:
+          name: "Setup firestore emulator"
+          command: firebase setup:emulators:firestore
+      - run:
           name: "Run Jest and Collect Coverage Reports"
           command: npm run test:emulator:coverage
       - store_artifacts:
