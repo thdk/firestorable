@@ -2,6 +2,8 @@
 
 Mobx observable wrapper for firebase firestore database.
 
+[![CircleCI](https://circleci.com/gh/thdk/firestorable/tree/master.svg?style=svg)](https://circleci.com/gh/thdk/firestorable/tree/master)
+
 ## How to use
 
 **Under construction**
