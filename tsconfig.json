@@ -5,6 +5,10 @@
       "module": "es6",
       "declaration": true,
       "outDir": "./dist",
+      "rootDirs": [
+        "src",
+        "__tests__"
+      ],
       /* Strict Type-Checking Options */
       "strict": true,
       "noImplicitAny": true,

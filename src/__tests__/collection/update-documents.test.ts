@@ -1,5 +1,5 @@
 import { addItemInBatch, initDatabase, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
-import { Collection, ICollectionOptions } from "../../src";
+import { Collection, ICollectionOptions } from "../..";
 import { logger } from "../utils";
 
 const projectId = "test-update-documents";

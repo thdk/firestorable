@@ -1,5 +1,5 @@
 import { addItemInBatch, initDatabase, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
-import { Collection, ICollectionOptions, Doc } from "../../src";
+import { Collection, ICollectionOptions, Doc } from "../..";
 import { logger } from "../utils";
 import { IBook } from "../utils/types";
 

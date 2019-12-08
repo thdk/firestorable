@@ -1,4 +1,4 @@
-import { Collection } from "../../src";
+import { Collection } from "../..";
 
 import { initializeAdminApp } from "@firebase/testing";
 const app = initializeAdminApp({ projectId: "test-constructor-collection" });
