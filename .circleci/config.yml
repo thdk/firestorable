@@ -66,10 +66,16 @@ workflows:
   version: 2
   test-deploy:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /.*/
       - test:
           requires:
             - build
+          filters:
+            tags:
+              only: /.*/
       - deploy:
           requires:
             - test
