@@ -11,6 +11,8 @@ jobs:
   test:
     <<: *defaults
     steps:
+      - attach_workspace:
+          at: ~/repo
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "package.json" }}.
