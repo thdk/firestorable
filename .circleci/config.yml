@@ -33,6 +33,23 @@ jobs:
       - persist_to_workspace:
           root: ~/repo
           paths: .
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}.
+          - v1-dependencies-
+      - run: npm install
+      - run:
+          name: "Run build"
+          command: npm run build
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
   deploy:
     <<: *defaults
     steps:
@@ -49,10 +66,10 @@ workflows:
   version: 2
   test-deploy:
     jobs:
+      - build
       - test:
-          filters:
-            tags:
-              only: /^v.*/
+          requires:
+            - build
       - deploy:
           requires:
             - test
