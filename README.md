@@ -1,6 +1,6 @@
 # Firestorable
 
-Mobx observable wrapper for firebase firestore database.
+A strong typed observable wrapper using mobx for firebase firestore database.
 
 [![CircleCI](https://circleci.com/gh/thdk/firestorable/tree/master.svg?style=svg)](https://circleci.com/gh/thdk/firestorable/tree/master)
 [![Coverage Status](https://coveralls.io/repos/github/thdk/firestorable/badge.svg?branch=master)](https://coveralls.io/github/thdk/firestorable?branch=master)
