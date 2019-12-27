@@ -1,6 +1,6 @@
 {
   "name": "firestorable",
-  "version": "0.1.1",
+  "version": "0.1.9",
   "description": "Mobx observable wrapper for firebase firestore database.",
   "main": "dist/index.js",
   "scripts": {
@@ -45,6 +45,16 @@
     "@types/jest": "^24.0.23",
     "jest": "^24.9.0",
     "ts-jest": "^24.2.0",
-    "typescript": "^3.3.3"
-  }
+    "typescript": "^3.6.0"
+  },
+  "files": [
+    "dist/Collection.d.ts",
+    "dist/Collection.js",
+    "dist/Document.d.ts",
+    "dist/Document.js",
+    "dist/index.d.ts",
+    "dist/index.js",
+    "dist/utils.d.ts",
+    "dist/utils.js"
+  ]
 }

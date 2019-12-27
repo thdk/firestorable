@@ -1,5 +1,5 @@
 import { addItemInBatch, initDatabase, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
-import { Collection, ICollectionOptions, RealtimeMode } from "../../src";
+import { Collection, ICollectionOptions, RealtimeMode } from "../..";
 import { logger } from "../utils";
 
 const projectId = "test-delete-documents";

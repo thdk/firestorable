@@ -1,4 +1,4 @@
-import { Collection, ICollectionOptions, FetchMode, RealtimeMode } from "../../src";
+import { Collection, ICollectionOptions, FetchMode, RealtimeMode } from "../..";
 import { logger } from '../utils';
 import { initDatabase, addItemInBatch, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
 

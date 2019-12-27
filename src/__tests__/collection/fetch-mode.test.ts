@@ -1,4 +1,4 @@
-import { Collection, ICollectionOptions, FetchMode } from '../../src';
+import { Collection, ICollectionOptions, FetchMode } from '../..';
 import { autorun, when, reaction } from 'mobx';
 import { logger, waitAsync } from '../utils';
 import { addItemInBatch, initDatabase, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from '../utils/firestore-utils';

@@ -11,7 +11,8 @@ jobs:
   test:
     <<: *defaults
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/repo
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "package.json" }}.
@@ -30,9 +31,27 @@ jobs:
       - store_artifacts:
           path: coverage
       - coveralls/upload
+
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}.
+          - v1-dependencies-
+      - run: npm install
+      - run:
+          name: "Run build"
+          command: npm run build
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
       - persist_to_workspace:
           root: ~/repo
           paths: .
+
   deploy:
     <<: *defaults
     steps:
@@ -49,10 +68,16 @@ workflows:
   version: 2
   test-deploy:
     jobs:
-      - test:
+      - build:
           filters:
             tags:
-              only: /^v.*/
+              only: /.*/
+      - test:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
       - deploy:
           requires:
             - test
