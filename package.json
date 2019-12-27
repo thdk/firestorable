@@ -1,6 +1,6 @@
 {
   "name": "firestorable",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Mobx observable wrapper for firebase firestore database.",
   "main": "dist/index.js",
   "scripts": {
