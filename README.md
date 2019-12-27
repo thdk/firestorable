@@ -1,13 +1,51 @@
 # Firestorable
 
-Mobx observable wrapper for firebase firestore database.
+A strong typed observable wrapper using mobx for firebase firestore database.
 
 [![CircleCI](https://circleci.com/gh/thdk/firestorable/tree/master.svg?style=svg)](https://circleci.com/gh/thdk/firestorable/tree/master)
 [![Coverage Status](https://coveralls.io/repos/github/thdk/firestorable/badge.svg?branch=master)](https://coveralls.io/github/thdk/firestorable?branch=master)
 
-## How to use
+## How to use: basic example
 
-**Under construction**
+Create an instance of a firestorable collection:
+```js
+const db = firebase.firestore();
+
+// create a type or interface that matches the data in the firestore collection
+interface IRegistration {
+    time: number;
+    description: string;
+}
+
+// use the interface as generic type when creating the firestorable collection
+const registrationCollection = new Collection<IRegistration>(
+  db,
+  "registrations", // name of your firestore collection
+);
+```
+
+And use that instance in a mobx observable react component:
+
+```jsx
+const RegistrationsList = observer(() => 
+      <div className="registrations-list">
+        {
+            // Each item in the docs property of the create Collection has a strong typed (IRegistration) data property representing the document data from the firestore 'registrations' collection.
+            registrationCollection.docs
+                .map(doc => <div key={doc.id}>
+                    <div>Time: {doc.data.time}</div>
+                    <div>Description: {doc.data.description}</div>
+                </div>)
+        }
+      </div>
+  );
+});
+```
+
+This RegistrationsList component will now rerender whenever changes occur in the 'registrations' collection of your firestore database.
+
+I've also created a separate github repo to bundle  [example applications](https://github.com/thdk/firestorable-examples) that demonstrate how to use firestorable with react.
+
 
 ## Contributing
 
