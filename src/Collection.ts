@@ -39,7 +39,7 @@ export enum FetchMode {
 export interface ICollectionOptions<T, K> {
     realtimeMode?: RealtimeMode;
     fetchMode?: FetchMode;
-    query?: (ref: CollectionReference) => Query;
+    query?: ((ref: CollectionReference) => Query) | null;
     deserialize?: (firestoreData: K) => T;
     serialize?: (appData: Partial<T> | null) => Partial<K>;
 }
@@ -55,11 +55,11 @@ export class Collection<T, K = T> {
     private docsContainer = {
         docs: observable<string, Doc<T, K>>(new Map)
     };
-    
+
     private isObserved = false;
 
     @observable.ref
-    public query?: ((ref: CollectionReference) => Query) | null;
+    public query?: ICollectionOptions<T, K>["query"];
 
     /** 'false' until documents are received for the current query */
     @observable
