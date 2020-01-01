@@ -1,10 +1,9 @@
 import { Collection, ICollectionOptions, FetchMode, RealtimeMode } from "../..";
 import { logger } from '../utils';
-import { initDatabase, addItemInBatch, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
+import { initDatabase, addItemInBatch, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
 
-const projectId = "test-realtime-mode";
 let collection: Collection<{ value: string }>;
-const { db, collectionRef } = initDatabase(projectId, "books");
+const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-realtime-mode", "books");
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
@@ -17,7 +16,7 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     );
 }
 
-beforeEach(() => clearFirestoreDataAsync(projectId));
+beforeEach(() => clearFirestoreDataAsync());
 
 afterAll(deleteFirebaseAppsAsync);
 

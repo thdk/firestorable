@@ -1,9 +1,9 @@
 import { Collection, ICollectionOptions, FetchMode } from '../..';
 import { autorun, when, reaction } from 'mobx';
 import { logger, waitAsync } from '../utils';
-import { addItemInBatch, initDatabase, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from '../utils/firestore-utils';
+import { addItemInBatch, initDatabase, deleteFirebaseAppsAsync } from '../utils/firestore-utils';
 
-const { db, collectionRef } = initDatabase("test-auto-fetch", "books");
+const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-auto-fetch", "books");
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
@@ -18,7 +18,7 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
 
 let collection: Collection<{value: string}>;
 
-beforeEach(() => clearFirestoreDataAsync("test-auto-fetch"));
+beforeEach(() => clearFirestoreDataAsync());
 
 afterEach(() => collection.dispose());
 
@@ -113,6 +113,8 @@ describe("With fetch mode = auto:", () => {
 
                     collection.query = ref => ref.where("value", "==", "B");
 
+                    expect(collection.isFetched).toBe(false);
+
                     return when(() => collection.isFetched)
                         .then(() => {
                             expect(collection.docs.length).toBe(1);
@@ -130,23 +132,6 @@ describe("With fetch mode = auto:", () => {
 
                 expect(collection.isFetched).toBe(false);
                 expect(collection.isLoading).toBe(false);
-            });
-        });
-
-        describe("to null", () => {
-            test("it should clear the documents", () => {
-                autorun(() => {
-                    jest.fn()(collection.docs.length);
-                });
-
-                return when(() => collection.isFetched).then(() => {
-                    collection.query = null;
-
-                    return when(() => collection.isFetched)
-                        .then(() => {
-                            expect(collection.docs.length).toBe(0);
-                        });
-                });
             });
         });
     });

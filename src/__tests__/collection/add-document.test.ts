@@ -1,10 +1,9 @@
-import { initDatabase, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
+import { initDatabase, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
 
 import { ICollectionOptions, Collection } from "../..";
 import { logger } from "../utils";
 
-const projectId = "test-add-documents";
-const { db, collectionRef } = initDatabase(projectId, "books");
+const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-add-documents", "books");
 
 interface IBook {
     name: string;
@@ -23,7 +22,7 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     );
 }
 
-beforeEach(() => clearFirestoreDataAsync(projectId));
+beforeEach(() => clearFirestoreDataAsync());
 
 afterAll(deleteFirebaseAppsAsync);
 

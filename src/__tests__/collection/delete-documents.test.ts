@@ -1,9 +1,8 @@
-import { addItemInBatch, initDatabase, clearFirestoreDataAsync, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
+import { addItemInBatch, initDatabase, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
 import { Collection, ICollectionOptions, RealtimeMode } from "../..";
 import { logger } from "../utils";
 
-const projectId = "test-delete-documents";
-const { db, collectionRef } = initDatabase(projectId, "books");
+const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-delete-documents", "books");
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
@@ -16,7 +15,7 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     );
 }
 
-beforeEach(() => clearFirestoreDataAsync(projectId));
+beforeEach(() => clearFirestoreDataAsync());
 
 afterAll(deleteFirebaseAppsAsync);
 
