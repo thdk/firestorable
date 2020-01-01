@@ -5,6 +5,18 @@ A strong typed observable wrapper using mobx for firebase firestore database.
 [![CircleCI](https://circleci.com/gh/thdk/firestorable/tree/master.svg?style=svg)](https://circleci.com/gh/thdk/firestorable/tree/master)
 [![Coverage Status](https://coveralls.io/repos/github/thdk/firestorable/badge.svg?branch=master)](https://coveralls.io/github/thdk/firestorable?branch=master)
 
+## Installation
+
+```
+npm install firestorable
+```
+
+## Firestorable - example applications
+
+There is a separate github repo with example applications to demonstrate how to use firestorable with react and mobx.
+
+[**example applications**](https://github.com/thdk/firestorable-examples)
+
 ## How to use: basic example
 
 Create an instance of a firestorable collection:
@@ -27,7 +39,7 @@ const registrationCollection = new Collection<IRegistration>(
 And use that instance in a mobx observable react component:
 
 ```jsx
-const RegistrationsList = observer(() => 
+const RegistrationsList = observer(() =>
       <div className="registrations-list">
         {
             // Each item in the docs property of the create Collection has a strong typed (IRegistration) data property representing the document data from the firestore 'registrations' collection.
@@ -43,9 +55,6 @@ const RegistrationsList = observer(() =>
 ```
 
 This RegistrationsList component will now rerender whenever changes occur in the 'registrations' collection of your firestore database.
-
-I've also created a separate github repo to bundle  [example applications](https://github.com/thdk/firestorable-examples) that demonstrate how to use firestorable with react.
-
 
 ## Contributing
 
