@@ -10,7 +10,11 @@ export const addItemInBatch = (batch: WriteBatch, data: any, collectionRef: Coll
 export const initDatabase = (projectId: string, collectionName: string) => {
     const app = initializeAdminApp({ projectId });
     const db = app.firestore();
-    return { collectionRef: db.collection(collectionName), db };
+    return {
+        collectionRef: db.collection(collectionName),
+        db,
+        clearFirestoreDataAsync: () => clearFirestoreDataAsync(projectId),
+    };
 };
 
 export const clearFirestoreDataAsync = (projectId: string) => {

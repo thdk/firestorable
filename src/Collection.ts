@@ -137,11 +137,6 @@ export class Collection<T, K = T> {
     }
 
     @computed
-    private get docsMap() {
-        return this.docsContainer.docs;
-    }
-
-    @computed
     public get docs() {
         return Array.from(this.docsContainer.docs.values());
     }
@@ -166,13 +161,6 @@ export class Collection<T, K = T> {
     private getDocs() {
         this.log(`Getting docs of ${this.collectionRef.id} collection...`);
 
-        if (this.fetchMode === FetchMode.auto && !this.isObserved) {
-            this.log(`Don't get docs for '${this.collectionRef.id}'. Nobody is listening anyway.`)
-            return;
-        }
-
-        let canClearCollection = true;
-
         // Unsubscribe from previous query updates
         this.cancelSnapshotListener();
 
@@ -184,6 +172,13 @@ export class Collection<T, K = T> {
             });
             return;
         }
+
+        if (this.fetchMode === FetchMode.auto && !this.isObserved) {
+            this.log(`Don't get docs for '${this.collectionRef.id}'. Nobody is listening anyway.`)
+            return;
+        }
+
+        let canClearCollection = true;
 
         this.isLoading = true;
 
@@ -225,7 +220,7 @@ export class Collection<T, K = T> {
                     case "added":
                     case "modified":
                         const firestoreData = doc.data() as K;
-                        this.docsMap.set(id, new Doc(this.collectionRef,
+                        this.docsContainer.docs.set(id, new Doc(this.collectionRef,
                             firestoreData,
                             {
                                 deserialize: this.deserialize,
@@ -235,13 +230,13 @@ export class Collection<T, K = T> {
                         );
                         break;
                     case "removed":
-                        this.docsMap.delete(id);
+                        this.docsContainer.docs.delete(id);
                         break;
                 }
             });
         } else {
             this.log(`Received empty snapshot in '${this.collectionRef.id}' collection.`);
-            this.docsMap.clear();
+            this.docsContainer.docs.clear();
         }
     }
 
@@ -372,9 +367,9 @@ export class Collection<T, K = T> {
     }
 
     private clear() {
-        if (this.docsMap.size) {
+        if (this.docsContainer.docs.size) {
             this.log(`Docs in ${this.collectionRef.id} collection cleared.`);
-            this.docsMap.clear();
+            this.docsContainer.docs.clear();
         }
     }
 
