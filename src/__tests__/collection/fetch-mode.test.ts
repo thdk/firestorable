@@ -34,7 +34,7 @@ describe("With fetch mode = auto:", () => {
         return batch.commit();
     });
 
-    describe("when collection becomes observed", () => {
+    describe("when collection.docs becomes observed", () => {
         test('it should fetch documents', () => {
             // When no observers, the collection should not be fetched
             expect(collection.isFetched).toBe(false);
@@ -55,7 +55,7 @@ describe("With fetch mode = auto:", () => {
         });
     });
 
-    describe("when collection becomes unobserved", () => {
+    describe("when collection.docs becomes unobserved", () => {
 
         test('it should stop listening for document changes', () => {
             // When no observers, the collection should not be fetched
@@ -64,6 +64,65 @@ describe("With fetch mode = auto:", () => {
             // Add a dummy observer
             const stopAutorun = autorun(() => {
                 jest.fn()(collection.docs);
+            });
+
+            // Collection should be listening for changes when it become observed
+            expect(collection.isActive).toBe(true);
+
+            // Collection should start loading the documents when it becomes observed
+            expect(collection.isLoading).toBe(true);
+
+            return when(() => !collection.isLoading)
+                .then(() => {
+                    // Remove the observer
+                    stopAutorun();
+
+                    return waitAsync(1000).then(() => {
+                        // Collection should stop listening for changes
+                        expect(collection.isActive).toBe(false);
+
+                        // Add a new document to the collection
+                        return collectionRef.add({ value: "B" })
+                            .then(() => {
+                                // The new document should not show up in the docs as we are not listening for changes
+                                expect(collection.docs.length).toBe(1);
+                            });
+                    });
+
+                });
+        });
+	});
+	
+	describe("when collection.isFetched becomes observed", () => {
+        test('it should fetch documents', () => {
+            // When no observers, the collection should not be fetched
+            expect(collection.isFetched).toBe(false);
+
+            // Add a dummy observer
+            reaction(() => collection.isFetched, () => {
+                // console.log(collection.docs.length);
+            });
+
+            // Collection should start loading the documents when it becomes observed
+            expect(collection.isLoading).toBe(true);
+
+            // When loading is finished, the documents must be present in the collection
+            return when(() => !collection.isLoading)
+                .then(() => {
+                    expect(collection.docs.length).toBe(1);
+                });
+        });
+    });
+
+    describe("when collection.isFetched becomes unobserved", () => {
+
+        test('it should stop listening for document changes', () => {
+            // When no observers, the collection should not be fetched
+            expect(collection.isFetched).toBe(false);
+
+            // Add a dummy observer
+            const stopAutorun = autorun(() => {
+                jest.fn()(collection.isFetched);
             });
 
             // Collection should be listening for changes when it become observed

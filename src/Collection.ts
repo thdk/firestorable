@@ -69,6 +69,8 @@ export class Collection<T, K = T> {
     @observable
     public isLoading: boolean = false;
 
+    private numberOfObservers: number = 0;
+
     private readonly collectionRef: CollectionReference;
     private readonly realtimeMode: RealtimeMode;
     private readonly fetchMode: FetchMode;
@@ -130,6 +132,9 @@ export class Collection<T, K = T> {
             if (this.fetchMode === FetchMode.auto) {
                 this.onBecomeObservedDisposable = onBecomeObserved(this.docsContainer, "docs", this.onObservedStatusChanged.bind(this, true));
                 this.onBecomeUnobservedDisposable = onBecomeUnobserved(this.docsContainer, "docs", this.onObservedStatusChanged.bind(this, false));
+
+                this.onBecomeObservedDisposable = onBecomeObserved(this, "isFetched", this.onObservedStatusChanged.bind(this, true));
+                this.onBecomeUnobservedDisposable = onBecomeUnobserved(this, "isFetched", this.onObservedStatusChanged.bind(this, false));
             }
         }
 
@@ -374,11 +379,16 @@ export class Collection<T, K = T> {
     }
 
     private onObservedStatusChanged(isObserved: boolean) {
-        this.isObserved = isObserved;
-        if (isObserved) {
+        this.numberOfObservers += isObserved ? 1 : -1;
+
+        this.log(`Number of observers changed to: ${this.numberOfObservers}`);
+
+        if (this.numberOfObservers === 1 && !this.isObserved) {
+            this.isObserved = true;
             this.log(`Docs in collection '${this.collectionRef.id}' became observed.`);
             this.getDocs();
-        } else {
+        } else if (this.numberOfObservers === 0) {
+            this.isObserved === false;
             this.log(`Docs in collection '${this.collectionRef.id}' became unobserved.`);
             this.cancelSnapshotListener();
         }
