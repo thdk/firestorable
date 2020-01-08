@@ -23,7 +23,6 @@ export class Doc<T, K = T> implements IDoc<T> {
     private deserialize: IDocOptions<T, K>["deserialize"];
     private unwatchDocument?: () => void;
 
-    // TODO: don't allow null as a type for data
     constructor(collectionRef: CollectionReference, data: K | null, options: IDocOptions<T, K>, id?: string) {
         const { deserialize, watch } = options;
         this.deserialize = deserialize;
@@ -46,7 +45,9 @@ export class Doc<T, K = T> implements IDoc<T> {
 
     public watch() {
         this.unwatchDocument = this.ref.onSnapshot(snapshot => {
-            this.dataField.set(this.deserialize(snapshot.data() as unknown as K));
+            // snapshot data can be undefined when document get's deleted
+            const data = snapshot.data();
+            this.dataField.set(data ? this.deserialize(data as unknown as K) : undefined);
         });
     }
 
