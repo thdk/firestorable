@@ -42,6 +42,7 @@ export interface ICollectionOptions<T, K> {
     query?: ((ref: CollectionReference) => Query) | null;
     deserialize?: (firestoreData: K) => T;
     serialize?: (appData: Partial<T> | null) => Partial<K>;
+    name?: string;
 }
 
 export interface ICollectionDependencies {
@@ -57,6 +58,7 @@ export class Collection<T, K = T> {
     };
 
     private isObserved = false;
+    private name: string;
 
     @observable.ref
     public query?: ICollectionOptions<T, K>["query"];
@@ -96,7 +98,8 @@ export class Collection<T, K = T> {
             fetchMode = FetchMode.auto,
             query,
             deserialize = (x: K) => x as unknown as T,
-            serialize = (x: Partial<T> | null) => x as unknown as Partial<K>
+            serialize = (x: Partial<T> | null) => x as unknown as Partial<K>,
+            name,
         } = options;
 
         if (typeof collection === "string") {
@@ -106,6 +109,10 @@ export class Collection<T, K = T> {
         } else {
             this.collectionRef = collection;
         }
+
+        // Name is used to identify this collection in logs and debug sessions.
+        // Useful in case multiple firestorable collections are created from the same firestore collection.
+        this.name = name || this.collectionRef.id;
 
         this.query = query;
 
@@ -138,7 +145,7 @@ export class Collection<T, K = T> {
             }
         }
 
-        this.log(`Collection ${this.collectionRef.id} created.`);
+        this.log(`Created`);
     }
 
     @computed
@@ -164,7 +171,7 @@ export class Collection<T, K = T> {
     }
 
     private getDocs() {
-        this.log(`Getting docs of ${this.collectionRef.id} collection...`);
+        this.log(`Getting docs...`);
 
         // Unsubscribe from previous query updates
         this.cancelSnapshotListener();
@@ -179,7 +186,7 @@ export class Collection<T, K = T> {
         }
 
         if (this.fetchMode === FetchMode.auto && !this.isObserved) {
-            this.log(`Don't get docs for '${this.collectionRef.id}'. Nobody is listening anyway.`)
+            this.log(`Don't get docs. Nobody is listening anyway.`)
             return;
         }
 
@@ -193,7 +200,7 @@ export class Collection<T, K = T> {
                     this.cancelSnapshotListener(false);
                 }
                 else {
-                    this.log(`Subscribed for updates in '${this.collectionRef.id}' collection.`);
+                    this.log(`Subscribed for updates`);
                 }
 
                 transaction(() => {
@@ -214,7 +221,7 @@ export class Collection<T, K = T> {
         if (!snapshot.empty) {
             const docChanges = snapshot.docChanges();
 
-            this.log(`Received ${docChanges.length} changes in '${this.collectionRef.id}' collection.`);
+            this.log(`Received ${docChanges.length} changes.`);
 
             docChanges.forEach(change => {
                 const { doc: { id }, doc, type } = change;
@@ -365,7 +372,7 @@ export class Collection<T, K = T> {
 
     private cancelSnapshotListener(shouldLog = true) {
         if (this.snapshotDisposable) {
-            shouldLog && this.log(`Unsubscribing listener on docs of ${this.collectionRef.id} collection...`);
+            shouldLog && this.log(`Unsubscribing listener on docs...`);
             this.snapshotDisposable();
             this.snapshotDisposable = undefined;
         }
@@ -373,7 +380,7 @@ export class Collection<T, K = T> {
 
     private clear() {
         if (this.docsContainer.docs.size) {
-            this.log(`Docs in ${this.collectionRef.id} collection cleared.`);
+            this.log(`Docs cleared.`);
             this.docsContainer.docs.clear();
         }
     }
@@ -385,11 +392,11 @@ export class Collection<T, K = T> {
 
         if (this.numberOfObservers === 1 && !this.isObserved) {
             this.isObserved = true;
-            this.log(`Docs in collection '${this.collectionRef.id}' became observed.`);
+            this.log(`Docs became observed.`);
             this.getDocs();
         } else if (this.numberOfObservers === 0) {
-            this.isObserved === false;
-            this.log(`Docs in collection '${this.collectionRef.id}' became unobserved.`);
+            this.isObserved = false;
+            this.log(`Docs in collection became unobserved.`);
             this.cancelSnapshotListener();
         }
     }
@@ -399,6 +406,6 @@ export class Collection<T, K = T> {
     }
 
     private log(message: string, severity: "info" | "warning" | "error" = "info") {
-        this.logger && this.logger(message, severity);
+        this.logger && this.logger(`${this.name}: ${message}`, severity);
     }
 }

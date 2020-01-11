@@ -22,12 +22,16 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     );
 }
 
+let collection: Collection<IBook>;
+
 beforeEach(() => clearFirestoreDataAsync());
 
 afterAll(deleteFirebaseAppsAsync);
 
 describe("Collection.addAsync", () => {
-    const collection = createCollection<IBook>();
+    beforeEach(() => {
+        collection = createCollection<IBook>();
+    });
 
     describe("Adding a single document", () => {
         describe("when no forced id is provided", () => {
