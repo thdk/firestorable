@@ -50,9 +50,12 @@ describe("Collection.addAsync", () => {
         describe("when a forced id is provided", () => {
             test("it should add the document with the given id", () => {
 
-                return collection.addAsync({ total: 11, name: "Book" })
-                    .then(id => {
-                        return collectionRef.doc(id).get()
+                return collection.addAsync(
+                    { total: 11, name: "Book" },
+                    "given-id"
+                    )
+                    .then(() => {
+                        return collectionRef.doc("given-id").get()
                             .then(snapshot => {
                                 expect(snapshot.exists).toBe(true);
                             });

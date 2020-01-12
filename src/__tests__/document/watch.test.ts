@@ -22,18 +22,18 @@ function deserializeBook(book: IBookData): IBook {
     return { ...otherProps, award: newValue };
 }
 
-const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-add-documents", "books");
+const { collectionRef, clearFirestoreDataAsync } = initDatabase("test-document-watch", "books");
 
 const dummyBook = {
     name: "book a",
     award: null,
 };
 
-const createDoc = (watch: boolean) => {
-    return new Doc<IBook, IBookData>(db.collection("books"), dummyBook, {
+const createDoc = (watch: boolean, id?: string) => {
+    return new Doc<IBook, IBookData>(collectionRef, dummyBook, {
         deserialize: deserializeBook,
         watch,
-    });
+    }, id);
 };
 
 beforeEach(() => clearFirestoreDataAsync());
@@ -49,7 +49,7 @@ describe("Document.watch", () => {
         let doc: Doc<IBook, IBookData>;
 
         beforeEach(() => {
-            doc = createDoc(true);
+            doc = createDoc(true, "id-A");
         });
 
         describe("when document gets deleted in the database", () => {
@@ -59,6 +59,32 @@ describe("Document.watch", () => {
                     .then(() => waitAsync(50))
                     .then(() => {
                         expect(doc.data).toBe(undefined);
+                    });
+            });
+        });
+
+        describe("when document is updated in database", () => {
+            test("it should respond to changes", () => {
+                return collectionRef.doc("id-A")
+                    .set({
+                        award: 3,
+                    })
+                    .then(() => {
+                        expect(doc.data!.award).toBe(3);
+                    });
+            });
+        });
+
+        describe("when unwatch() is called on document", () => {
+            test("it should not respond to changes anymore", () => {
+                doc.unwatch();
+
+                return collectionRef.doc("id-A")
+                    .set({
+                        award: 3,
+                    })
+                    .then(() => {
+                        expect(doc.data?.award).toBe(undefined);
                     });
             });
         });
@@ -75,7 +101,6 @@ describe("Document.watch", () => {
             it("should NOT set data property of document to undefined", () => {
                 return collectionRef.doc("id-A")
                     .delete()
-                    .then(() => waitAsync(50))
                     .then(() => {
                         expect(doc.data).toEqual({
                             name: "book a",

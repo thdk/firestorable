@@ -16,7 +16,7 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     );
 }
 
-let collection: Collection<{value: string}>;
+let collection: Collection<{ value: string }>;
 
 beforeEach(() => clearFirestoreDataAsync());
 
@@ -91,9 +91,9 @@ describe("With fetch mode = auto:", () => {
 
                 });
         });
-	});
-	
-	describe("when collection.isFetched becomes observed", () => {
+    });
+
+    describe("when collection.isFetched becomes observed", () => {
         test('it should fetch documents', () => {
             // When no observers, the collection should not be fetched
             expect(collection.isFetched).toBe(false);
@@ -227,6 +227,30 @@ describe("With fetch mode = manual:", () => {
             // Collection should not start loading the documents when it becomes observed
             expect(collection.isLoading).toBe(false);
             expect(collection.isFetched).toBe(false);
+        });
+    });
+});
+
+describe("With fetch mode = once:", () => {
+    beforeEach(() => {
+
+        // Add initial data
+        return collectionRef.add(
+            {
+                value: "A",
+            }
+        ).then(() => {
+            collection = createCollection({
+                fetchMode: FetchMode.once,
+            });
+        });
+    });
+
+    describe("when collection is created", () => {
+        test('it should immediately fetch documents', () => {
+            return when(() => !collection.isLoading).then(() => {
+                expect(collection.isFetched).toBe(true);
+            });
         });
     });
 });

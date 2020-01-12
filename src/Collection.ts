@@ -32,8 +32,19 @@ export enum RealtimeMode {
 }
 
 export enum FetchMode {
+    /**
+     * (Re)fetch the documents each time the collection becomes observed
+     * and also refetches when the query changes after documents have been fetched
+     */
     auto = 0,
+    /**
+    * Only fetches when calling fetchAsync explicitly
+    */
     manual = 1,
+    /**
+     * Fetches once when creating the collection. Refetches when the query changes after documents have been fetched
+     */
+    once = 2,
 }
 
 export interface ICollectionOptions<T, K> {
@@ -128,12 +139,15 @@ export class Collection<T, K = T> {
 
         this.logger = logger;
 
-        if (this.fetchMode === FetchMode.auto || this.realtimeMode === RealtimeMode.on) {
+        if (this.fetchMode !== FetchMode.manual || this.realtimeMode === RealtimeMode.on) {
             this.queryReactionDisposable = reaction(() => this.query, () => {
                 this.log("Received new query");
 
-                this.isFetched = false;
-                this.getDocs();
+                // New query only needs to trigger fetch docs again if the collection is currently fetched
+                // The documents will be fetched later with the new query when manually / automatically fetching
+                if (this.isFetched) {
+                    this.getDocs();
+                }
             });
 
             if (this.fetchMode === FetchMode.auto) {
@@ -146,6 +160,10 @@ export class Collection<T, K = T> {
         }
 
         this.log(`Created`);
+
+        if (this.fetchMode === FetchMode.once) {
+            this.getDocs();
+        }
     }
 
     @computed
@@ -165,13 +183,16 @@ export class Collection<T, K = T> {
                 when(() => this.isFetched, resolve);
             });
         } else {
-            return Promise.reject(`You shouldn't try to manually fetch documents when fetchMode = auto. \n
+            return Promise.reject(`You shouldn't try to manually fetch documents when fetchMode != manual. \n
             Set fetchMode to manual in the options when creation the Collection.`);
         }
     }
 
     private getDocs() {
         this.log(`Getting docs...`);
+
+        // Flag collection as not fetched
+        this.isFetched = false;
 
         // Unsubscribe from previous query updates
         this.cancelSnapshotListener();
@@ -182,11 +203,6 @@ export class Collection<T, K = T> {
                 this.isFetched = true;
                 this.clear();
             });
-            return;
-        }
-
-        if (this.fetchMode === FetchMode.auto && !this.isObserved) {
-            this.log(`Don't get docs. Nobody is listening anyway.`)
             return;
         }
 
@@ -253,7 +269,9 @@ export class Collection<T, K = T> {
     }
 
     /**
-     * Returns null if query is null. Aka, requesting collection with zero documents.
+     * Returns a collection query if query of collection has a value.
+     * Returs the collectionRef from the argument if no query has been explicitly set.
+     * Returns null if collection query is null. Aka, requesting collection with zero documents.
      */
     private filter(collectionRef: CollectionReference) {
         if (this.query === null) return null;
