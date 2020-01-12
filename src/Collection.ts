@@ -10,7 +10,7 @@ import {
     onBecomeUnobserved,
     computed,
     when,
-} from 'mobx';
+} from "mobx";
 
 import { Doc } from "./Document";
 import { QuerySnapshot } from '@firebase/firestore-types';
@@ -241,8 +241,6 @@ export class Collection<T, K = T> {
 
             docChanges.forEach(change => {
                 const { doc: { id }, doc, type } = change;
-
-                this.log(`Type of change is '${type}'`);
 
                 switch (type) {
                     case "added":
