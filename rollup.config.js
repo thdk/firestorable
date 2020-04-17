@@ -41,6 +41,7 @@ export default [{  // Commonjs
     format: 'es',
     sourcemap: true
   },
+  external,
   plugins: [
     commonjs(),
     resolve(),
