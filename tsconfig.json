@@ -3,12 +3,6 @@
       /* Basic Options */
       "target": "es6",
       "module": "es6",
-      "declaration": true,
-      "outDir": "./dist",
-      "rootDirs": [
-        "src",
-        "__tests__"
-      ],
       /* Strict Type-Checking Options */
       "strict": true,
       "noImplicitAny": true,
@@ -25,8 +19,10 @@
       "noFallthroughCasesInSwitch": true,
       /* Module Resolution Options */
       "moduleResolution": "node",
-      "baseUrl": "./node_modules",
       "esModuleInterop": true,
       "experimentalDecorators": true
-    }
+    },
+    "include": [
+      "src/*"
+    ]
   }
