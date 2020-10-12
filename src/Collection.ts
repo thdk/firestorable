@@ -13,7 +13,6 @@ import {
 } from "mobx";
 
 import { Doc } from "./Document";
-import { QuerySnapshot } from '@firebase/firestore-types';
 
 export type CollectionReference = firebase.firestore.CollectionReference;
 export type Query = firebase.firestore.Query;
@@ -54,6 +53,7 @@ export interface ICollectionOptions<T, K> {
     deserialize?: (firestoreData: K) => T;
     serialize?: (appData: Partial<T> | null) => Partial<K>;
     name?: string;
+    defaultSetOptions?: firebase.firestore.SetOptions;
 }
 
 export interface ICollectionDependencies {
@@ -98,6 +98,8 @@ export class Collection<T, K = T> {
     private readonly firestore: firebase.firestore.Firestore;
     private readonly logger: ICollectionDependencies["logger"];
 
+    private defaultSetOptions?: ICollectionOptions<T, K>["defaultSetOptions"];
+
     constructor(
         firestore: firebase.firestore.Firestore,
         collection: (() => CollectionReference) | string | CollectionReference,
@@ -111,6 +113,7 @@ export class Collection<T, K = T> {
             deserialize = (x: K) => x as unknown as T,
             serialize = (x: Partial<T> | null) => x as unknown as Partial<K>,
             name,
+            defaultSetOptions,
         } = options;
 
         if (typeof collection === "string") {
@@ -132,6 +135,7 @@ export class Collection<T, K = T> {
         this.fetchMode = fetchMode;
         this.deserialize = deserialize;
         this.serialize = serialize;
+        this.defaultSetOptions = defaultSetOptions;
 
         const {
             logger,
@@ -233,7 +237,7 @@ export class Collection<T, K = T> {
             });
     }
 
-    private readSnapshot(snapshot: QuerySnapshot) {
+    private readSnapshot(snapshot: firebase.firestore.QuerySnapshot) {
         if (!snapshot.empty) {
             const docChanges = snapshot.docChanges();
 
@@ -303,14 +307,18 @@ export class Collection<T, K = T> {
 
     // TODO: when realtime updates is disabled, we must manually update the docs!
     public addAsync(data: T[]): Promise<string[]>;
-    public addAsync(data: T, id?: string): Promise<string>;
-    public addAsync(data: T | T[], id?: string): Promise<string | string[]> {
+    public addAsync(data: T, id?: string, setOptions?: firebase.firestore.SetOptions): Promise<string>;
+    public addAsync(data: T | T[], id?: string, setOptions?: firebase.firestore.SetOptions): Promise<string | string[]> {
+        const options = setOptions || this.defaultSetOptions
+            ? { ...this.defaultSetOptions, ...setOptions }
+            : undefined;
+
         if (data instanceof Array) {
             const insertedIds = [] as string[];
             const batch = this.firestore.batch();
             data.forEach(doc => {
                 const docRef = this.collectionRef.doc();
-                batch.set(docRef, this.serialize(doc));
+                batch.set(docRef, this.serialize(doc), { ...options });
                 insertedIds.push(docRef.id);
             });
 
@@ -318,7 +326,7 @@ export class Collection<T, K = T> {
                 .then(() => insertedIds);
         } else {
             const firestoreData = this.serialize(data);
-            return addAsync(this.collectionRef, firestoreData, id);
+            return addAsync(this.collectionRef, firestoreData, id, options);
         }
     }
 

@@ -1,5 +1,5 @@
 import { initDatabase, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
-import { waitAsync } from "../utils";
+import { waitFor } from "@testing-library/dom";
 
 import { Doc } from "../..";
 
@@ -53,13 +53,11 @@ describe("Document.watch", () => {
         });
 
         describe("when document gets deleted in the database", () => {
-            it("should set data property of document to undefined", () => {
-                return collectionRef.doc("id-A")
-                    .delete()
-                    .then(() => waitAsync(50))
-                    .then(() => {
-                        expect(doc.data).toBe(undefined);
-                    });
+            it("should set data property of document to undefined", async () => {
+                await collectionRef.doc("id-A")
+                    .delete();
+
+                await waitFor(() => expect(doc.data).toBe(undefined));
             });
         });
 
@@ -70,7 +68,7 @@ describe("Document.watch", () => {
                         award: 3,
                     })
                     .then(() => {
-                        expect(doc.data!.award).toBe(3);
+                        return waitFor(() => expect(doc.data!.award).toBe(3));
                     });
             });
         });

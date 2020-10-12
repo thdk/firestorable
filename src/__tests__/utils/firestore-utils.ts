@@ -1,8 +1,12 @@
-import * as firebase from '@firebase/testing';
-import { WriteBatch, CollectionReference } from "@firebase/firestore-types";
-import { initializeAdminApp } from "@firebase/testing";
+import * as firebase from '@firebase/rules-unit-testing';
+import { initializeAdminApp } from "@firebase/rules-unit-testing";
 
-export const addItemInBatch = (batch: WriteBatch, data: any, collectionRef: CollectionReference, id?: string) => {
+export const addItemInBatch = (
+    batch: firebase.firestore.WriteBatch,
+    data: any,
+    collectionRef: firebase.firestore.CollectionReference,
+    id?: string,
+) => {
     const doc = id === undefined ? collectionRef.doc() : collectionRef.doc(id);
     batch.set(doc, data);
 };

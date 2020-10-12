@@ -1,15 +1,26 @@
-import { CollectionReference } from "@firebase/firestore-types";
+export const addAsync = <T>(
+    collectionRef: firebase.firestore.CollectionReference,
+    data: Partial<T>,
+    id?: string,
+    setOptions?: firebase.firestore.SetOptions,
+) => {
+    if (id || setOptions) {
+        const docRef = id ? collectionRef.doc(id) : collectionRef.doc();
+        return docRef
+            .set(data, { ...setOptions })
+            .then(() => docRef.id);
+    }
 
-export const addAsync = <T>(collectionRef: CollectionReference, data: Partial<T>, id?: string) => {
-    const docRef = id ? collectionRef.doc(id) : collectionRef.doc();
-    return docRef.set(data).then(() => docRef.id);
+    return collectionRef
+        .add(data)
+        .then(docRef => docRef.id);
 };
 
 /**
  * Returns a promise that resolves with T if document with id exists
  * or rejects if document with id does not exist.
  */
-export function getAsync<T>(collectionRef: CollectionReference, id: string) {
+export function getAsync<T>(collectionRef: firebase.firestore.CollectionReference, id: string) {
     return collectionRef.doc(id)
         .get()
         .then(d => {

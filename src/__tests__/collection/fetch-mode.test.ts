@@ -2,6 +2,7 @@ import { Collection, ICollectionOptions, FetchMode } from '../..';
 import { autorun, when, reaction } from 'mobx';
 import { logger, waitAsync } from '../utils';
 import { addItemInBatch, initDatabase, deleteFirebaseAppsAsync } from '../utils/firestore-utils';
+import { waitFor } from '@testing-library/dom';
 
 const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-auto-fetch", "books");
 
@@ -73,22 +74,22 @@ describe("With fetch mode = auto:", () => {
             expect(collection.isLoading).toBe(true);
 
             return when(() => !collection.isLoading)
-                .then(() => {
+                .then(async () => {
                     // Remove the observer
                     stopAutorun();
 
-                    return waitAsync(1000).then(() => {
-                        // Collection should stop listening for changes
-                        expect(collection.isActive).toBe(false);
+                    // Collection should stop listening for changes
+                    await waitFor(() => expect(collection.isActive).toBe(false));
 
-                        // Add a new document to the collection
-                        return collectionRef.add({ value: "B" })
-                            .then(() => {
-                                // The new document should not show up in the docs as we are not listening for changes
-                                expect(collection.docs.length).toBe(1);
-                            });
-                    });
+                    // Add a new document to the collection
+                    await collectionRef.add({ value: "B" });
 
+                    await waitAsync(50);
+
+                    // The new document should not show up in the docs as we are not listening for changes
+                    await waitFor(
+                        () => expect(collection.docs.length).toBe(1),
+                    );
                 });
         });
     });

@@ -3,11 +3,14 @@ import { initDatabase, deleteFirebaseAppsAsync } from "../utils/firestore-utils"
 import { ICollectionOptions, Collection } from "../..";
 import { logger } from "../utils";
 
+const firebase = require("firebase-admin");
+
 const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-add-documents", "books");
 
 interface IBook {
     name: string;
     total: number;
+    award?: string;
     isDeleted?: boolean;
 }
 
@@ -30,14 +33,32 @@ afterAll(deleteFirebaseAppsAsync);
 
 describe("Collection.addAsync", () => {
     beforeEach(() => {
-        collection = createCollection<IBook>();
+        collection = createCollection<IBook>({
+            serialize: data => {
+                if (!data) {
+                    throw new Error("Deleting not supported");
+                }
+                const firestoreData: any = {
+                    award: firebase.firestore.FieldValue.delete(),
+                    ...data
+                };
+                return firestoreData;
+
+            },
+            defaultSetOptions: {
+                merge: true,
+            },
+        });
     });
 
     describe("Adding a single document", () => {
         describe("when no forced id is provided", () => {
             test("it should add the document with a generated id", () => {
 
-                return collection.addAsync({ total: 11, name: "Book" })
+                return collection.addAsync({
+                    total: 11,
+                    name: "Book"
+                })
                     .then(id => {
                         return collectionRef.doc(id).get()
                             .then(snapshot => {
@@ -51,9 +72,12 @@ describe("Collection.addAsync", () => {
             test("it should add the document with the given id", () => {
 
                 return collection.addAsync(
-                    { total: 11, name: "Book" },
+                    {
+                        name: "Book",
+                        total: 11,
+                    },
                     "given-id"
-                    )
+                )
                     .then(() => {
                         return collectionRef.doc("given-id").get()
                             .then(snapshot => {
@@ -66,7 +90,6 @@ describe("Collection.addAsync", () => {
 
     describe("Adding multiple documents", () => {
         test("it should add the documents with generated ids", () => {
-
             return collection.addAsync([
                 { total: 11, name: "Book" },
                 { total: 22, name: "Book 2" }

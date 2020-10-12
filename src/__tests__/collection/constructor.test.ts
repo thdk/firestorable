@@ -1,6 +1,6 @@
 import { Collection } from "../..";
 
-import { initializeAdminApp } from "@firebase/testing";
+import { initializeAdminApp } from "@firebase/rules-unit-testing";
 const app = initializeAdminApp({ projectId: "test-constructor-collection" });
 const db = app.firestore();
 

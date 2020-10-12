@@ -1,5 +1,3 @@
-import { CollectionReference, DocumentReference } from "@firebase/firestore-types";
-
 import { observable, computed, action, IObservableValue } from "mobx";
 
 export interface IDocOptions<T, K> {
@@ -18,12 +16,12 @@ export class Doc<T, K = T> implements IDoc<T> {
 
     private dataField: IObservableValue<T | undefined> = observable.box(undefined);
 
-    private ref: DocumentReference;
+    private ref: firebase.firestore.DocumentReference;
     public readonly id: string;
     private deserialize: IDocOptions<T, K>["deserialize"];
     private unwatchDocument?: () => void;
 
-    constructor(collectionRef: CollectionReference, data: K | null, options: IDocOptions<T, K>, id?: string) {
+    constructor(collectionRef: firebase.firestore.CollectionReference, data: K | null, options: IDocOptions<T, K>, id?: string) {
         const { deserialize, watch } = options;
         this.deserialize = deserialize;
         this.ref = id ? collectionRef.doc(id) : collectionRef.doc();
