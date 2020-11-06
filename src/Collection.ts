@@ -179,6 +179,10 @@ export class Collection<T, K = T> {
         return this.docsContainer.docs.get(id);
     }
 
+    public newId() {
+        return this.collectionRef.doc().id;
+    }
+
     // Todo: only expose fetchAsync if fetchMode = manual
     public fetchAsync() {
         if (this.fetchMode === FetchMode.manual) {
