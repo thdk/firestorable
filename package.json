@@ -19,7 +19,7 @@
     "coverage": "start coverage\\lcov-report\\index.html",
     "build": "rollup -c",
     "preversion": "npm run test:emulator",
-    "postversion": "git push && git push --tags && npm publish"
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
