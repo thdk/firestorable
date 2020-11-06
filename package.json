@@ -18,8 +18,7 @@
     "test:emulator:coverage": "firebase emulators:exec --only firestore \"jest --coverage\"",
     "coverage": "start coverage\\lcov-report\\index.html",
     "build": "rollup -c",
-    "prepublishOnly": "npm test:emulator",
-    "prepare": "npm run build",
+    "preversion": "npm run test:emulator",
     "postversion": "git push && git push --tags && npm publish"
   },
   "repository": {
