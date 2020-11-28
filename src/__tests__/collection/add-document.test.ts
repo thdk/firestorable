@@ -1,4 +1,4 @@
-import { initDatabase, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
+import { initDatabase, deleteFirebaseApps } from "../utils/firestore-utils";
 
 import { ICollectionOptions, Collection } from "../..";
 import { logger } from "../utils";
@@ -29,7 +29,7 @@ let collection: Collection<IBook>;
 
 beforeEach(() => clearFirestoreDataAsync());
 
-afterAll(deleteFirebaseAppsAsync);
+afterAll(deleteFirebaseApps);
 
 describe("Collection.addAsync", () => {
     beforeEach(() => {

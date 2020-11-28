@@ -1,3 +1,5 @@
+import type firebase from "firebase";
+
 export const addAsync = <T>(
     collectionRef: firebase.firestore.CollectionReference,
     data: Partial<T>,

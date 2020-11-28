@@ -1,4 +1,5 @@
-import "firebase/auth";
+import type firebase from "firebase";
+
 import { action, transaction, observable } from "mobx";
 import { Collection } from "../../Collection";
 import { Doc } from "../../Document";

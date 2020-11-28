@@ -1,7 +1,7 @@
 import { Collection, ICollectionOptions, FetchMode } from '../..';
 import { autorun, when, reaction } from 'mobx';
 import { logger, waitAsync } from '../utils';
-import { addItemInBatch, initDatabase, deleteFirebaseAppsAsync } from '../utils/firestore-utils';
+import { addItemInBatch, initDatabase, deleteFirebaseApps } from '../utils/firestore-utils';
 import { waitFor } from '@testing-library/dom';
 
 const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-auto-fetch", "books");
@@ -23,7 +23,7 @@ beforeEach(() => clearFirestoreDataAsync());
 
 afterEach(() => collection.dispose());
 
-afterAll(deleteFirebaseAppsAsync);
+afterAll(deleteFirebaseApps);
 
 describe("With fetch mode = auto:", () => {
     beforeEach(() => {

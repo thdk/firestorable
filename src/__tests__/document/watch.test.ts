@@ -1,4 +1,4 @@
-import { initDatabase, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
+import { initDatabase, deleteFirebaseApps } from "../utils/firestore-utils";
 import { waitFor } from "@testing-library/dom";
 
 import { Doc } from "../..";
@@ -38,7 +38,7 @@ const createDoc = (watch: boolean, id?: string) => {
 
 beforeEach(() => clearFirestoreDataAsync());
 
-afterAll(deleteFirebaseAppsAsync);
+afterAll(deleteFirebaseApps);
 
 describe("Document.watch", () => {
     beforeEach(() => {

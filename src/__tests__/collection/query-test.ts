@@ -1,5 +1,5 @@
 import { Collection, ICollectionOptions } from "../..";
-import { initDatabase, deleteFirebaseAppsAsync } from "../utils/firestore-utils";
+import { initDatabase, deleteFirebaseApps } from "../utils/firestore-utils";
 import { logger } from "../utils";
 import { when, autorun } from "mobx";
 
@@ -26,7 +26,7 @@ beforeEach(() => clearFirestoreDataAsync());
 
 afterEach(() => collection.dispose());
 
-afterAll(deleteFirebaseAppsAsync);
+afterAll(deleteFirebaseApps);
 
 describe("Collection.query", () => {
 

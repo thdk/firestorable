@@ -1,5 +1,10 @@
-import * as firebase from '@firebase/rules-unit-testing';
-import { initializeAdminApp } from "@firebase/rules-unit-testing";
+import { 
+    initializeAdminApp, 
+    clearFirestoreData as clearFirestoreDataFn,
+    apps,
+} from "@firebase/rules-unit-testing";
+
+import type firebase from "firebase";
 
 export const addItemInBatch = (
     batch: firebase.firestore.WriteBatch,
@@ -17,14 +22,14 @@ export const initDatabase = (projectId: string, collectionName: string) => {
     return {
         collectionRef: db.collection(collectionName),
         db,
-        clearFirestoreDataAsync: () => clearFirestoreDataAsync(projectId),
+        clearFirestoreDataAsync: () => clearFirestoreData(projectId),
     };
 };
 
-export const clearFirestoreDataAsync = (projectId: string) => {
-    return firebase.clearFirestoreData({ projectId });
+export const clearFirestoreData = (projectId: string) => {
+    return clearFirestoreDataFn({ projectId });
 };
 
-export const deleteFirebaseAppsAsync = () => {
-    return Promise.all(firebase.apps().map(app => app.delete()));
+export const deleteFirebaseApps = () => {
+    return Promise.all(apps().map(app => app.delete()));
 };

@@ -1,3 +1,5 @@
+import type firebase from "firebase";
+
 import { observable, action, transaction, computed, reaction } from "mobx";
 
 import { Collection, ICollectionDependencies, ICollectionOptions} from "../../Collection";

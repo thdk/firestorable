@@ -1,3 +1,5 @@
+import type firebase from "firebase";
+
 import { observable, computed, action, IObservableValue } from "mobx";
 
 export interface IDocOptions<T, K> {

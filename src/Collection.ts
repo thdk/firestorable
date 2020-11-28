@@ -1,5 +1,4 @@
-import * as firebase from 'firebase/app';
-import 'firebase/firestore';
+import type firebase from "firebase";
 
 import { addAsync, getAsync } from './utils';
 import {
