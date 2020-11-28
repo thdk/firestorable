@@ -186,9 +186,15 @@ export class Collection<T, K = T> {
     // Todo: only expose fetchAsync if fetchMode = manual
     public fetchAsync() {
         if (this.fetchMode === FetchMode.manual) {
-            return new Promise(resolve => {
+            return new Promise<void>(resolve => {
                 this.getDocs();
-                when(() => this.isFetched, resolve);
+                const disposeWhen = when(
+                    () => this.isFetched,
+                    () => {
+                        disposeWhen();
+                        resolve();
+                    },
+                );
             });
         } else {
             return Promise.reject(`You shouldn't try to manually fetch documents when fetchMode != manual. \n
