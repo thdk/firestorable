@@ -1,4 +1,5 @@
-import { ICollectionOptions, Collection, initTestFirestore } from "../..";
+import { ICollectionOptions, Collection } from "../..";
+import { initTestFirestore } from "../../utils/test-firestore";
 import { logger } from "../../__test-utils__";
 
 const firebase = require("firebase-admin");
