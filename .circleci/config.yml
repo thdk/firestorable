@@ -19,8 +19,8 @@ jobs:
           - v1-dependencies-
       - run:
           name: update-firebase
-          command: 'sudo npm install -g firebase-tools@latest'
-      - run: npm install
+          command: 'npm install -g firebase-tools@latest'
+      - run: npm ci
       - run:
           name: "Run tests and collect coverage reports"
           command: npm run test:emulator:coverage
@@ -40,7 +40,7 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "package.json" }}.
           - v1-dependencies-
-      - run: npm install
+      - run: npm ci
       - run:
           name: "Run build"
           command: npm run build
