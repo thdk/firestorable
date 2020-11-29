@@ -1,6 +1,6 @@
 import type firebase from "firebase";
 
-import { addAsync, getAsync } from './utils';
+import { addAsync, getAsync } from '../__test-utils__/firestore';
 import {
     observable,
     reaction,
@@ -11,7 +11,7 @@ import {
     when,
 } from "mobx";
 
-import { Doc } from "./Document";
+import { Doc } from "../document/Document";
 
 export type CollectionReference = firebase.firestore.CollectionReference;
 export type Query = firebase.firestore.Query;

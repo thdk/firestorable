@@ -1,7 +1,5 @@
-import { addItemInBatch } from "../utils/firestore-utils";
 import { Collection, ICollectionOptions, Doc } from "../..";
-import { logger } from "../utils";
-import { IBook } from "../utils/types";
+import { logger, IBook, addItemInBatch } from "../../__test-utils__";
 import { initTestFirestore } from "../../utils/test-firestore";
 
 const {

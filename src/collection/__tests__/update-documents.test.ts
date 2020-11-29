@@ -1,6 +1,5 @@
-import { addItemInBatch } from "../utils/firestore-utils";
 import { Collection, ICollectionOptions } from "../..";
-import { logger } from "../utils";
+import { logger, IBook, addItemInBatch } from "../../__test-utils__";
 import { initTestFirestore } from "../../utils/test-firestore";
 
 const {
@@ -12,12 +11,6 @@ const {
     "test-update-documents",
     ["books"],
 );
-
-interface IBook {
-    name: string;
-    total: number;
-    isDeleted?: boolean;
-}
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(

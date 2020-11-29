@@ -2,16 +2,7 @@ import { waitFor } from "@testing-library/dom";
 
 import { Doc } from "../..";
 import { initTestFirestore } from "../../utils/test-firestore";
-
-interface IBook {
-    name: string;
-    award?: number | undefined;
-}
-
-interface IBookData {
-    name: string;
-    award?: null | number;
-}
+import { IBook, IBookData } from "../../__test-utils__";
 
 function deserializeBook(book: IBookData): IBook {
     const { award, ...otherProps } = book;
@@ -32,6 +23,7 @@ const {
 );
 
 const dummyBook = {
+    total: 5,
     name: "book a",
     award: null,
 };
@@ -110,6 +102,7 @@ describe("Document.watch", () => {
                         expect(doc.data).toEqual({
                             name: "book a",
                             award: undefined,
+                            total: 5,
                         });
                     });
             });

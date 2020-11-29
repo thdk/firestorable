@@ -2,8 +2,8 @@ import type firebase from "firebase";
 
 import { observable, action, transaction, computed, reaction } from "mobx";
 
-import { Collection, ICollectionDependencies, ICollectionOptions } from "../../Collection";
-import { Doc } from "../../Document";
+import { Collection, ICollectionDependencies, ICollectionOptions } from "../../collection";
+import { Doc } from "../../document";
 
 export interface StoreOptions<T = any, K = T> {
     collection: string,

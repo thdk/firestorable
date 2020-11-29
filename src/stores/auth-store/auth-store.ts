@@ -1,8 +1,8 @@
 import type firebase from "firebase";
 
 import { action, transaction, observable } from "mobx";
-import { Collection } from "../../Collection";
-import { Doc } from "../../Document";
+import { Collection } from "../../collection";
+import { Doc } from "../../document";
 import { CrudStore, StoreOptions } from "../crud-store";
 import { getLoggedInUser} from "../../utils/auth";
 

@@ -3,7 +3,7 @@ import { waitFor } from "@testing-library/dom";
 import { AuthStore, AuthStoreUser } from "./auth-store";
 
 import type firebase from "firebase";
-import { FetchMode } from "../../Collection";
+import { FetchMode } from "../../collection";
 
 const {
     firestore,

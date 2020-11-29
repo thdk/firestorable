@@ -1,6 +1,6 @@
 import { Collection, ICollectionOptions, RealtimeMode } from "../..";
-import { logger } from "../utils";
 import { initTestFirestore } from "../../utils/test-firestore";
+import { logger } from "../../__test-utils__";
 
 const {
     firestore,
@@ -18,7 +18,7 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
         collectionRef,
         options,
         {
-            logger
+            logger: logger
         }
     );
 }
