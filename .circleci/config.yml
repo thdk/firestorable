@@ -11,7 +11,7 @@ jobs:
   test:
     working_directory: ~/repo
     docker:
-    - image: timbru31/java-node
+    - image: zlgchenfan/alpine-sys
     steps:
       - attach_workspace:
           at: ~/repo
