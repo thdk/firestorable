@@ -11,7 +11,7 @@ import {
     when,
 } from "mobx";
 
-import { Doc } from "../document/Document";
+import { Doc } from "../document";
 
 export type CollectionReference = firebase.firestore.CollectionReference;
 export type Query = firebase.firestore.Query;
