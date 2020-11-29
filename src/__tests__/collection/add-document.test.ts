@@ -1,11 +1,17 @@
-import { initDatabase, deleteFirebaseApps } from "../utils/firestore-utils";
-
-import { ICollectionOptions, Collection } from "../..";
+import { ICollectionOptions, Collection, initTestFirestore } from "../..";
 import { logger } from "../utils";
 
 const firebase = require("firebase-admin");
 
-const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-add-documents", "books");
+const {
+    firestore,
+    refs: [collectionRef],
+    clearFirestoreData,
+    deleteFirebaseApp,
+} = initTestFirestore(
+    "test-add-documents",
+    ["books"],
+);
 
 interface IBook {
     name: string;
@@ -16,7 +22,7 @@ interface IBook {
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
-        db,
+        firestore,
         collectionRef,
         options,
         {
@@ -27,9 +33,9 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
 
 let collection: Collection<IBook>;
 
-beforeEach(() => clearFirestoreDataAsync());
+beforeEach(() => clearFirestoreData());
 
-afterAll(deleteFirebaseApps);
+afterAll(deleteFirebaseApp);
 
 describe("Collection.addAsync", () => {
     beforeEach(() => {

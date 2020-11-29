@@ -1,17 +1,21 @@
 import { Collection, ICollectionOptions } from "../..";
-import { initDatabase, deleteFirebaseApps } from "../utils/firestore-utils";
 import { logger } from "../utils";
 import { when, autorun } from "mobx";
+import { initTestFirestore } from "../../utils/test-firestore";
 
 const {
-    clearFirestoreDataAsync,
-    collectionRef,
-    db,
-} = initDatabase("test-query", "books");
+    clearFirestoreData,
+    refs: [collectionRef],
+    firestore,
+    deleteFirebaseApp,
+} = initTestFirestore(
+    "test-query",
+    ["books"],
+);
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
-        db,
+        firestore,
         collectionRef,
         options,
         {
@@ -22,11 +26,11 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
 
 let collection: Collection<{ value: string }>;
 
-beforeEach(() => clearFirestoreDataAsync());
+beforeEach(() => clearFirestoreData());
 
 afterEach(() => collection.dispose());
 
-afterAll(deleteFirebaseApps);
+afterAll(deleteFirebaseApp);
 
 describe("Collection.query", () => {
 

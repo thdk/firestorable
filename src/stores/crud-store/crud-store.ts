@@ -2,17 +2,17 @@ import type firebase from "firebase";
 
 import { observable, action, transaction, computed, reaction } from "mobx";
 
-import { Collection, ICollectionDependencies, ICollectionOptions} from "../../Collection";
+import { Collection, ICollectionDependencies, ICollectionOptions } from "../../Collection";
 import { Doc } from "../../Document";
 
-export interface StoreOptions<T, K> {
+export interface StoreOptions<T = any, K = T> {
     collection: string,
     collectionDependencies?: ICollectionDependencies,
     collectionOptions?: ICollectionOptions<T, K>,
     createNewDocumentDefaults?(overrideDefaultsWith?: Partial<T>): Partial<T> | Promise<Partial<T>>,
 };
 
-export class CrudStore<T, K> {
+export class CrudStore<T = any, K = T> {
     @observable.ref
     private activeDocumentIdField: string | undefined = undefined;
 
@@ -53,7 +53,10 @@ export class CrudStore<T, K> {
                 () => this.activeDocumentIdField,
                 (id) => {
                     if (!id) {
-                        this.newDocumentField.set(undefined);
+                        transaction(() => {
+                            this.newDocumentField.set(undefined);
+                            this.activeDocumentField = undefined;
+                        });
 
                     } else {
                         this.activeDocumentField = this.collection.get(id);
@@ -65,17 +68,18 @@ export class CrudStore<T, K> {
                     }
                 },
             ),
-            reaction(() => this.activeDocumentId, (id) => {
-                if (!id) {
-                    this.activeDocumentField = undefined;
-                }
-            }),
         ];
+    }
+
+    public deleteDocument(id: string, deleteOptions: {
+        useFlag?: boolean,
+    } = {}) {
+        return this.deleteDocuments(deleteOptions, id);
     }
 
     public deleteDocuments(
         {
-            useFlag = true,
+            useFlag = false,
         }: {
             useFlag?: boolean,
         } = {},
@@ -153,5 +157,8 @@ export class CrudStore<T, K> {
 
     public dispose() {
         this.disposeFns.reverse().forEach(fn => fn());
+        this.activeDocumentField = undefined;
+        this.activeDocumentIdField = undefined;
+        this.newDocumentField.set(undefined);
     }
 }

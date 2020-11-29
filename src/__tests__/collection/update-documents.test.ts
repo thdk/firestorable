@@ -1,8 +1,17 @@
-import { addItemInBatch, initDatabase, deleteFirebaseApps } from "../utils/firestore-utils";
+import { addItemInBatch } from "../utils/firestore-utils";
 import { Collection, ICollectionOptions } from "../..";
 import { logger } from "../utils";
+import { initTestFirestore } from "../../utils/test-firestore";
 
-const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-update-documents", "books");
+const {
+    firestore,
+    refs: [collectionRef],
+    clearFirestoreData,
+    deleteFirebaseApp,
+} = initTestFirestore(
+    "test-update-documents",
+    ["books"],
+);
 
 interface IBook {
     name: string;
@@ -12,7 +21,7 @@ interface IBook {
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
-        db,
+        firestore,
         collectionRef,
         options,
         {
@@ -21,9 +30,9 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     );
 }
 
-beforeEach(() => clearFirestoreDataAsync());
+beforeEach(() => clearFirestoreData());
 
-afterAll(deleteFirebaseApps);
+afterAll(deleteFirebaseApp);
 
 describe("Collection.updateAsync", () => {
 
@@ -43,7 +52,7 @@ describe("Collection.updateAsync", () => {
             });
 
             // Add initial data
-            const batch = db.batch();
+            const batch = firestore.batch();
             addItemInBatch(batch, { total: 1, name: "A" }, collectionRef, "id1");
             addItemInBatch(batch, { total: 2, name: "B" }, collectionRef, "id2");
             addItemInBatch(batch, { total: 3, name: "C" }, collectionRef, "id3");

@@ -1,12 +1,14 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
+import builtins from 'rollup-plugin-node-builtins';
 
 const input = `src/index.ts`;
 const external = [
   "mobx",
   "firebase/app",
-  "firebase/firestore"
+  "firebase/firestore",
+  "@firebase/rules-unit-testing",
 ];
 
 export default [{  // Commonjs
@@ -25,11 +27,13 @@ export default [{  // Commonjs
   },
   plugins: [
     commonjs(),
-    resolve(),
+    resolve({ preferBuiltins: true }),
+    builtins(),
     typescript({
       declaration: true,
       declarationDir: "./lib/types/",
-      rootDir: 'src/'
+      rootDir: 'src/',
+      skipLibCheck: true,
     }),
   ],
 },
@@ -44,7 +48,8 @@ export default [{  // Commonjs
   external,
   plugins: [
     commonjs(),
-    resolve(),
+    resolve({ preferBuiltins: true }),
+    builtins(),
     typescript(),
   ],
 }];

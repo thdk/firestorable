@@ -323,6 +323,10 @@ export class Collection<T, K = T> {
             : undefined;
 
         if (data instanceof Array) {
+            if (data.length === 0) {
+                return Promise.resolve([]);
+            }
+
             const insertedIds = [] as string[];
             const batch = this.firestore.batch();
             data.forEach(doc => {

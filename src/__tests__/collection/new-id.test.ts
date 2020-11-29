@@ -1,12 +1,15 @@
 import { Collection, ICollectionOptions } from "../..";
-import { initDatabase } from "../utils/firestore-utils";
+import { initTestFirestore } from "../../utils/test-firestore";
 import { logger } from '../utils';
 
-const { db, collectionRef } = initDatabase("test-new-id", "books");
+const { firestore, refs: [collectionRef] } = initTestFirestore(
+    "test-new-id",
+    ["books"],
+);
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
-        db,
+        firestore,
         collectionRef,
         options,
         {

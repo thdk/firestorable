@@ -1,7 +1,7 @@
-import { initDatabase, deleteFirebaseApps } from "../utils/firestore-utils";
 import { waitFor } from "@testing-library/dom";
 
 import { Doc } from "../..";
+import { initTestFirestore } from "../../utils/test-firestore";
 
 interface IBook {
     name: string;
@@ -22,7 +22,14 @@ function deserializeBook(book: IBookData): IBook {
     return { ...otherProps, award: newValue };
 }
 
-const { collectionRef, clearFirestoreDataAsync } = initDatabase("test-document-watch", "books");
+const { 
+    refs: [collectionRef], 
+    clearFirestoreData,
+    deleteFirebaseApp,
+} = initTestFirestore(
+    "test-document-watch",
+    ["books"]
+);
 
 const dummyBook = {
     name: "book a",
@@ -36,9 +43,9 @@ const createDoc = (watch: boolean, id?: string) => {
     }, id);
 };
 
-beforeEach(() => clearFirestoreDataAsync());
+beforeEach(() => clearFirestoreData());
 
-afterAll(deleteFirebaseApps);
+afterAll(deleteFirebaseApp);
 
 describe("Document.watch", () => {
     beforeEach(() => {

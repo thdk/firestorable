@@ -1,12 +1,20 @@
-import { addItemInBatch, initDatabase, deleteFirebaseApps } from "../utils/firestore-utils";
 import { Collection, ICollectionOptions, RealtimeMode } from "../..";
 import { logger } from "../utils";
+import { initTestFirestore } from "../../utils/test-firestore";
 
-const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-delete-documents", "books");
+const {
+    firestore,
+    refs: [collectionRef],
+    clearFirestoreData,
+    deleteFirebaseApp,
+} = initTestFirestore(
+    "test-delete-documents",
+    ["books"]
+);
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
-        db,
+        firestore,
         collectionRef,
         options,
         {
@@ -15,20 +23,20 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     );
 }
 
-beforeEach(() => clearFirestoreDataAsync());
+beforeEach(() => clearFirestoreData());
 
-afterAll(deleteFirebaseApps);
+afterAll(deleteFirebaseApp);
 
 describe("Collection.deleteAsync", () => {
 
     beforeEach(() => {
         // Add initial data
-        const batch = db.batch();
-        addItemInBatch(batch, { total: 1, name: "A" }, collectionRef, "id1");
-        addItemInBatch(batch, { total: 2, name: "B" }, collectionRef, "id2");
-        addItemInBatch(batch, { total: 3, name: "C" }, collectionRef, "id3");
-        addItemInBatch(batch, { total: 2, name: "C" }, collectionRef, "id4");
-        return batch.commit();
+        return Promise.all([
+            collectionRef.doc("id1").set({ total: 1, name: "A" }),
+            collectionRef.doc("id2").set({ total: 2, name: "B" }),
+            collectionRef.doc("id3").set({ total: 3, name: "C" }),
+            collectionRef.doc("id4").set({ total: 2, name: "C" }),
+        ]);
     });
 
     describe("when collection is not filtered with a query", () => {

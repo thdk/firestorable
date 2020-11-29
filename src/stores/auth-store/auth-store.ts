@@ -4,6 +4,7 @@ import { action, transaction, observable } from "mobx";
 import { Collection } from "../../Collection";
 import { Doc } from "../../Document";
 import { CrudStore, StoreOptions } from "../crud-store";
+import { getLoggedInUser} from "../../utils/auth";
 
 export interface AuthStoreUser {
     name?: string;
@@ -11,25 +12,11 @@ export interface AuthStoreUser {
     uid: string;
 }
 
-/**
- * Resolves with firbase.User if user is logged in
- * Rejects if no user is logged in
- */
-const getLoggedInUserAsync = (auth: firebase.auth.Auth) => {
-    return new Promise<firebase.User>((resolve, reject) => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
-            unsubscribe();
-            if (user) resolve(user);
-            else reject("Not authenticated");
-        });
-    });
-}
-
-export class AuthStore<T extends AuthStoreUser, K> extends CrudStore<T, K> {
+export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends CrudStore<T, K> {
     @observable.ref
     isAuthInitialised = false;
 
-    private auth?: firebase.auth.Auth;
+    private auth: firebase.auth.Auth;
     private patchExistingUser?(
         user: Doc<T, K>,
         collection: Collection<T, K>,
@@ -37,13 +24,14 @@ export class AuthStore<T extends AuthStoreUser, K> extends CrudStore<T, K> {
     ): Promise<Doc<T, K>>;
     private onSignOut?(): void;
 
+    private disposables: (() => void)[] = [];
     constructor(
         {
             firestore,
             auth,
         }: {
             firestore: firebase.firestore.Firestore,
-            auth?: firebase.auth.Auth,
+            auth: firebase.auth.Auth,
         },
         storeOptions: StoreOptions<T, K> = {
             collection: "users",
@@ -71,7 +59,9 @@ export class AuthStore<T extends AuthStoreUser, K> extends CrudStore<T, K> {
         this.patchExistingUser = patchExistingUser;
         this.onSignOut = onSignOut;
 
-        this.auth && this.auth.onAuthStateChanged(this.setUser.bind(this));
+        this.disposables.push(
+            this.auth.onAuthStateChanged(this.setUser.bind(this)),
+        );
     }
 
     @action
@@ -94,10 +84,17 @@ export class AuthStore<T extends AuthStoreUser, K> extends CrudStore<T, K> {
                     },
                     async () => {
                         const authStoreUser = {
-                            name: fbUser.displayName || undefined,
-                            email: fbUser.email || undefined,
                             uid: fbUser.uid,
                         } as Partial<T>;
+
+                        if (fbUser.displayName) {
+                            authStoreUser.name = fbUser.displayName;
+                        }
+
+                        if (fbUser.email) {
+                            authStoreUser.email = fbUser.email;
+                        }
+
                         const newDocument = await this.createNewDocument(authStoreUser);
 
                         this.addDocument(
@@ -118,7 +115,7 @@ export class AuthStore<T extends AuthStoreUser, K> extends CrudStore<T, K> {
         }
     }
 
-    private getAuthenticatedUserAsync(fbUser: firebase.User): Promise<Doc<T, K> | undefined> {
+    private getAuthenticatedUserAsync(fbUser: firebase.User): Promise<Doc<T, K>> {
         return this.collection.getAsync(fbUser.uid)
             .then((userDoc) => {
                 return this.patchExistingUser
@@ -132,10 +129,10 @@ export class AuthStore<T extends AuthStoreUser, K> extends CrudStore<T, K> {
     }
 
     @action.bound
-    private getAuthUserSuccess = (authUser: Doc<T, K> | undefined) => {
+    private getAuthUserSuccess = (authUser: Doc<T, K>) => {
         transaction(() => {
             this.isAuthInitialised = true;
-            this.setActiveDocumentId(authUser?.id);
+            this.setActiveDocumentId(authUser.id);
         });
     }
 
@@ -148,13 +145,12 @@ export class AuthStore<T extends AuthStoreUser, K> extends CrudStore<T, K> {
         this.auth && this.auth.signOut();
     }
 
-    public getLoggedInUserAsync() {
-        return this.auth
-            ? getLoggedInUserAsync(this.auth)
-            : Promise.reject(new Error("Firebase auth not initialized"));
+    public getLoggedInUser() {
+        return getLoggedInUser(this.auth);
     }
 
     public dispose() {
-        this.collection.dispose();
+        this.disposables.reverse().forEach(fn => fn());
+        super.dispose();
     }
 }

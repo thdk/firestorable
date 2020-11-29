@@ -20,9 +20,10 @@
       /* Module Resolution Options */
       "moduleResolution": "node",
       "esModuleInterop": true,
-      "experimentalDecorators": true
+      "experimentalDecorators": true,
+      "skipLibCheck": true
     },
     "include": [
-      "src/*"
+      "src/**/*"
     ]
   }

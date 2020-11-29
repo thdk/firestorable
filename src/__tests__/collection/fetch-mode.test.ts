@@ -1,14 +1,23 @@
 import { Collection, ICollectionOptions, FetchMode } from '../..';
 import { autorun, when, reaction } from 'mobx';
 import { logger, waitAsync } from '../utils';
-import { addItemInBatch, initDatabase, deleteFirebaseApps } from '../utils/firestore-utils';
+import { addItemInBatch } from '../utils/firestore-utils';
 import { waitFor } from '@testing-library/dom';
+import { initTestFirestore } from '../../utils/test-firestore';
 
-const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-auto-fetch", "books");
+const {
+    firestore,
+    refs: [collectionRef],
+    clearFirestoreData,
+    deleteFirebaseApp,
+} = initTestFirestore(
+    "test-auto-fetch", 
+    ["books"],
+);
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
-        db,
+        firestore,
         collectionRef,
         options,
         {
@@ -19,20 +28,18 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
 
 let collection: Collection<{ value: string }>;
 
-beforeEach(() => clearFirestoreDataAsync());
+beforeEach(() => clearFirestoreData());
 
 afterEach(() => collection.dispose());
 
-afterAll(deleteFirebaseApps);
+afterAll(deleteFirebaseApp);
 
 describe("With fetch mode = auto:", () => {
     beforeEach(() => {
         collection = createCollection();
 
         // Add initial data
-        const batch = db.batch();
-        addItemInBatch(batch, { value: "A" }, collectionRef);
-        return batch.commit();
+        return collectionRef.add({ value: "A" });
     });
 
     describe("when collection.docs becomes observed", () => {
@@ -156,7 +163,7 @@ describe("With fetch mode = auto:", () => {
     describe("when query of collection changes", () => {
         beforeEach(() => {
             // Add extra document to initial data
-            const batch = db.batch();
+            const batch = firestore.batch();
             addItemInBatch(batch, { value: "B" }, collectionRef);
             return batch.commit();
         });
@@ -210,7 +217,7 @@ describe("With fetch mode = manual:", () => {
         });
 
         // Add initial data
-        const batch = db.batch();
+        const batch = firestore.batch();
         addItemInBatch(batch, { value: "A" }, collectionRef);
         return batch.commit();
     });

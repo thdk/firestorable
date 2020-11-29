@@ -1,13 +1,22 @@
 import { Collection, ICollectionOptions, FetchMode, RealtimeMode } from "../..";
+import { initTestFirestore } from "../../utils/test-firestore";
 import { logger } from '../utils';
-import { initDatabase, addItemInBatch, deleteFirebaseApps } from "../utils/firestore-utils";
+import { addItemInBatch } from "../utils/firestore-utils";
 
 let collection: Collection<{ value: string }>;
-const { db, collectionRef, clearFirestoreDataAsync } = initDatabase("test-realtime-mode", "books");
+const {
+    firestore,
+    refs: [collectionRef],
+    clearFirestoreData,
+    deleteFirebaseApp,
+} = initTestFirestore(
+    "test-realtime-mode",
+    ["books"],
+);
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
-        db,
+        firestore,
         collectionRef,
         options,
         {
@@ -16,16 +25,16 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     );
 }
 
-beforeEach(() => clearFirestoreDataAsync());
+beforeEach(() => clearFirestoreData());
 
-afterAll(deleteFirebaseApps);
+afterAll(deleteFirebaseApp);
 
 describe("With realtime mode = on:", () => {
     beforeEach(() => {
         collection = createCollection({ fetchMode: FetchMode.manual });
 
         // Add initial data
-        const batch = db.batch();
+        const batch = firestore.batch();
         addItemInBatch(batch, { value: "A" }, collectionRef, "id1");
         return batch.commit().then(() => collection.fetchAsync());
     });
@@ -86,7 +95,7 @@ describe("With realtime mode = on:", () => {
                 collection = createCollection({
                     fetchMode: FetchMode.manual,
                     query: ref => ref.where("value", "==", "A"),
-                 });
+                });
 
                 return collection.fetchAsync();
             });
@@ -141,7 +150,7 @@ describe("With realtime mode = off:", () => {
         collection = createCollection({ realtimeMode: RealtimeMode.off, fetchMode: FetchMode.manual });
 
         // Add initial data
-        const batch = db.batch();
+        const batch = firestore.batch();
         addItemInBatch(batch, { value: "A" }, collectionRef, "id1");
         return batch.commit().then(() => collection.fetchAsync());
     });
