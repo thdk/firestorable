@@ -5,11 +5,13 @@ orbs:
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: zlgchenfan/alpine-sys
+    - image: cimg/node:15.3.0
 
 jobs:
   test:
-    <<: *defaults
+    working_directory: ~/repo
+    docker:
+    - image: timbru31/java-node
     steps:
       - attach_workspace:
           at: ~/repo
@@ -27,15 +29,18 @@ jobs:
       - run:
           name: "Run tests and collect coverage reports"
           command: npm run test:emulator:coverage
-      - run: apt-get install -y sudo
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
       - store_artifacts:
           path: coverage
+  coveralls:
+    working_directory: ~/repo
+    docker:
+    - image: "ubuntu"
+    steps:
       - coveralls/upload
-
   build:
     <<: *defaults
     steps:
@@ -79,6 +84,12 @@ workflows:
       - test:
           requires:
             - build
+          filters:
+            tags:
+              only: /.*/
+      - coveralls:
+          requires:
+            - test
           filters:
             tags:
               only: /.*/
