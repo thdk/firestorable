@@ -5,7 +5,7 @@ orbs:
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: timbru31/java-node
+    - image: joeferner/node-java
 
 jobs:
   test:
