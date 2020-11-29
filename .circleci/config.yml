@@ -5,7 +5,7 @@ orbs:
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: joeferner/node-java
+    - image: zlgchenfan/alpine-sys
 
 jobs:
   test:
