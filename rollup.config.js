@@ -4,6 +4,8 @@ import typescript from '@rollup/plugin-typescript';
 import builtins from 'rollup-plugin-node-builtins';
 
 const input = `src/index.ts`;
+const utils = `src/utils/index.ts`;
+
 const external = [
   "mobx",
   "firebase/app",
@@ -52,4 +54,21 @@ export default [{  // Commonjs
     builtins(),
     typescript(),
   ],
-}];
+},
+//UTILS (ES)
+{
+  input: utils,
+  output: {
+    file: "utils.js",
+    format: 'es',
+    sourcemap: true
+  },
+  external,
+  plugins: [
+    commonjs(),
+    resolve({ preferBuiltins: true }),
+    builtins(),
+    typescript(),
+  ],
+},
+];

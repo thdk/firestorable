@@ -1,6 +1,7 @@
 dist/
 lib/
 es/
+utils.js*
 .rpt2_cache/
 node_modules/
 firestore-debug.log
