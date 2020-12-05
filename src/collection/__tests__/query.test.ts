@@ -1,7 +1,7 @@
 import { Collection, ICollectionOptions } from "../..";
 import { logger } from "../../__test-utils__";
 import { when, autorun } from "mobx";
-import { initTestFirestore } from "../../utils/test-firestore";
+import { initTestFirestore } from "../../../utils/test-firestore";
 
 const {
     clearFirestoreData,

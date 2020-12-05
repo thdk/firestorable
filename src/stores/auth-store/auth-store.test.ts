@@ -1,4 +1,4 @@
-import { initTestFirestore } from "../../utils/test-firestore";
+import { initTestFirestore } from "../../../utils/test-firestore";
 import { waitFor } from "@testing-library/dom";
 import { AuthStore, AuthStoreUser } from "./auth-store";
 

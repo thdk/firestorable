@@ -1,5 +1,5 @@
 import { Collection, ICollectionOptions, FetchMode, RealtimeMode } from "../..";
-import { initTestFirestore } from "../../utils/test-firestore";
+import { initTestFirestore } from "../../../utils/test-firestore";
 import { logger, addItemInBatch } from "../../__test-utils__";
 
 let collection: Collection<{ value: string }>;

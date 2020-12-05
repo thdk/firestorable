@@ -2,7 +2,7 @@ import { Collection, ICollectionOptions, FetchMode } from '../..';
 import { autorun, when, reaction } from 'mobx';
 import { logger, waitAsync, addItemInBatch } from "../../__test-utils__";
 import { waitFor } from '@testing-library/dom';
-import { initTestFirestore } from '../../utils/test-firestore';
+import { initTestFirestore } from '../../../utils/test-firestore';
 
 const {
     firestore,

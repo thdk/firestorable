@@ -1,6 +1,6 @@
 import { Collection } from "../..";
 
-import { initTestFirestore } from "../../utils/test-firestore";
+import { initTestFirestore } from "../../../utils/test-firestore";
 
 const {
     firestore,

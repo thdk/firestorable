@@ -1,5 +1,5 @@
 import { Collection, ICollectionOptions } from "../..";
-import { initTestFirestore } from "../../utils/test-firestore";
+import { initTestFirestore } from "../../../utils/test-firestore";
 import { logger } from "../../__test-utils__";
 
 const { firestore, refs: [collectionRef] } = initTestFirestore(

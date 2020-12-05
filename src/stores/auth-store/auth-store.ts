@@ -4,13 +4,26 @@ import { action, transaction, observable } from "mobx";
 import { Collection } from "../../collection";
 import { Doc } from "../../document";
 import { CrudStore, StoreOptions } from "../crud-store";
-import { getLoggedInUser} from "../../utils/auth";
 
 export interface AuthStoreUser {
     name?: string;
     email?: string;
     uid: string;
 }
+
+/**
+ * Resolves with firbase.User if user is logged in
+ * Rejects if no user is logged in
+ */
+export const getLoggedInUser = (auth: firebase.auth.Auth) => {
+    return new Promise<firebase.User>((resolve, reject) => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            unsubscribe();
+            if (user) resolve(user);
+            else reject(new Error("Not authenticated"));
+        });
+    });
+};
 
 export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends CrudStore<T, K> {
     @observable.ref

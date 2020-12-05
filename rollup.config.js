@@ -4,7 +4,6 @@ import typescript from '@rollup/plugin-typescript';
 import builtins from 'rollup-plugin-node-builtins';
 
 const input = `src/index.ts`;
-const utils = `src/utils/index.ts`;
 
 const external = [
   "mobx",
@@ -36,6 +35,7 @@ export default [{  // Commonjs
       declarationDir: "./lib/types/",
       rootDir: 'src/',
       skipLibCheck: true,
+      exclude: ["**/*.test.ts"]
     }),
   ],
 },
@@ -44,22 +44,6 @@ export default [{  // Commonjs
   input,
   output: {
     file: "es/index.js",
-    format: 'es',
-    sourcemap: true
-  },
-  external,
-  plugins: [
-    commonjs(),
-    resolve({ preferBuiltins: true }),
-    builtins(),
-    typescript(),
-  ],
-},
-//UTILS (ES)
-{
-  input: utils,
-  output: {
-    file: "utils.js",
     format: 'es',
     sourcemap: true
   },

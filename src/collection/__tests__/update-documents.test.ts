@@ -1,6 +1,6 @@
 import { Collection, ICollectionOptions } from "../..";
 import { logger, IBook, addItemInBatch } from "../../__test-utils__";
-import { initTestFirestore } from "../../utils/test-firestore";
+import { initTestFirestore } from "../../../utils/test-firestore";
 
 const {
     firestore,

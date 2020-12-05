@@ -7,9 +7,7 @@
   "types": "lib/types/index.d.ts",
   "files": [
     "lib",
-    "es",
-    "src",
-    "utils.js"
+    "es"
   ],
   "scripts": {
     "emulator": "firebase emulators:start --only firestore",
@@ -18,7 +16,9 @@
     "test:emulator": "firebase emulators:exec --only firestore \"jest --silent\"",
     "test:emulator:coverage": "firebase emulators:exec --only firestore \"jest --silent --coverage\"",
     "coverage": "start coverage\\lcov-report\\index.html",
-    "build": "rollup -c",
+    "build": "npm run build:core && npm run build:utils",
+    "build:core": "rollup -c",
+    "build:utils": "tsc --project utils/tsconfig.json --outDir lib/utils --declaration",
     "preversion": "npm run test:emulator",
     "postversion": "git push && git push --tags"
   },

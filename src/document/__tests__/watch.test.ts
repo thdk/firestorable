@@ -1,7 +1,7 @@
 import { waitFor } from "@testing-library/dom";
 
 import { Doc } from "../..";
-import { initTestFirestore } from "../../utils/test-firestore";
+import { initTestFirestore } from "../../../utils/test-firestore";
 import { IBook, IBookData } from "../../__test-utils__";
 
 function deserializeBook(book: IBookData): IBook {

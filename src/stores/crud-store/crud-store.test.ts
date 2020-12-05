@@ -1,5 +1,5 @@
 import { CrudStore, StoreOptions } from "./index";
-import { initTestFirestore } from "../../utils/test-firestore";
+import { initTestFirestore } from "../../../utils/test-firestore";
 import { waitFor } from "@testing-library/dom";
 import { FetchMode } from "../../collection";
 import { reaction } from "mobx";
