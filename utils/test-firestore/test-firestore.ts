@@ -6,7 +6,6 @@ import {
 } from "@firebase/rules-unit-testing";
 
 import fs from "fs";
-import path from "path";
 
 import type firebase from "firebase";
 
@@ -28,7 +27,7 @@ const initAuthApp = async (
 ) => {
     await loadFirestoreRules({
         projectId,
-        rules: fs.readFileSync(path.resolve(__dirname, pathToRules), "utf8")
+        rules: fs.readFileSync(pathToRules, "utf8")
     });
 
     const app = initializeTestApp({
