@@ -15,7 +15,11 @@ export interface AuthStoreUser {
  * Resolves with firbase.User if user is logged in
  * Rejects if no user is logged in
  */
-export const getLoggedInUser = (auth: firebase.auth.Auth) => {
+export const getLoggedInUser = (auth?: firebase.auth.Auth) => {
+    if (!auth) {
+        return Promise.reject(new Error("No auth provided"));
+    }
+
     return new Promise<firebase.User>((resolve, reject) => {
         const unsubscribe = auth.onAuthStateChanged(user => {
             unsubscribe();
@@ -29,7 +33,7 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
     @observable.ref
     isAuthInitialised = false;
 
-    private auth: firebase.auth.Auth;
+    private auth?: firebase.auth.Auth;
     private patchExistingUser?(
         user: Doc<T, K>,
         collection: Collection<T, K>,
@@ -44,7 +48,7 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
             auth,
         }: {
             firestore: firebase.firestore.Firestore,
-            auth: firebase.auth.Auth,
+            auth?: firebase.auth.Auth,
         },
         storeOptions: StoreOptions<T, K> = {
             collection: "users",
@@ -72,7 +76,7 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
         this.patchExistingUser = patchExistingUser;
         this.onSignOut = onSignOut;
 
-        this.disposables.push(
+        this.auth && this.disposables.push(
             this.auth.onAuthStateChanged(this.setUser.bind(this)),
         );
     }
