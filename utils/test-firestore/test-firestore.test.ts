@@ -1,4 +1,5 @@
 import { initTestFirestore } from "../test-firestore";
+import path from "path";
 
 describe("test-firestore: initTestFirestore", () => {
     const {
@@ -28,7 +29,7 @@ describe("test-firestore: initTestFirestore", () => {
                 uid: "user-id-1",
                 email: "user1@team-timesheets.com",
             },
-            "firestore.rules.test",
+            path.resolve(__dirname, "firestore.rules.test"),
         );
 
         await expect(collectionRef.doc("book-1").get()).rejects.toBeDefined();

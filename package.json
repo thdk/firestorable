@@ -41,7 +41,7 @@
   },
   "homepage": "https://github.com/thdk/firestorable#readme",
   "peerDependencies": {
-    "mobx": ">= 5",
+    "mobx": "~5",
     "firebase": ">= 8",
     "@firebase/rules-unit-testing": "^1.1.4",
     "firebase-admin": "^9.2.0"
