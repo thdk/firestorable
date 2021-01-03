@@ -63,7 +63,10 @@ export class CrudStore<T = any, K = T> {
                         if (!this.activeDocumentField) {
                             // fetch the registration manually
                             this.collection.getAsync(id)
-                                .then(regDoc => this.activeDocumentField = regDoc);
+                                .then(regDoc => this.activeDocumentField = regDoc)
+                                .catch(() => {
+                                    this.activeDocumentIdField = undefined;
+                                });
                         }
                     }
                 },
