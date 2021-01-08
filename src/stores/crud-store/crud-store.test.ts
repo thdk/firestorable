@@ -226,5 +226,47 @@ describe("CrudStore", () => {
                 })
             ));
         });
+
+        it("should watch the data of the document when it's changed in the database", async () => {
+            await collectionRef.doc("id-1").set({foo:"bar"});
+            const crud = await createCrudStore();
+
+            await waitFor(() => expect(crud.collection.isFetched).toBeTruthy());
+
+            crud.setActiveDocumentId("id-1");
+
+            await waitFor(() => expect(crud.activeDocument).toEqual(
+                expect.objectContaining({
+                    foo: "bar",
+                }))
+            );
+
+            await collectionRef.doc("id-1").update({foo:"bar bar"});
+
+            await waitFor(() => expect(crud.activeDocument).toEqual(
+                expect.objectContaining({
+                    foo: "bar bar",
+                })),
+            );
+        });
+
+        it("should be undefined when activeDocumentId is set to invalid document id", async () => {
+            await collectionRef.doc("id-1").set({foo:"bar"});
+            const crud = await createCrudStore();
+
+            await waitFor(() => expect(crud.collection.isFetched).toBeTruthy());
+
+            crud.setActiveDocumentId("id-1");
+
+            await waitFor(() => expect(crud.activeDocument).toEqual(
+                expect.objectContaining({
+                    foo: "bar",
+                }))
+            );
+
+            crud.setActiveDocumentId("id-2");
+
+            await waitFor(() => expect(crud.activeDocument).toBeUndefined());
+        });
     });
 });
