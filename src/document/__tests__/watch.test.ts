@@ -36,7 +36,7 @@ const createDoc = (watch: boolean, id?: string) => {
     }, id);
 };
 
-beforeEach(() => clearFirestoreData({projectId}));
+beforeEach(() => clearFirestoreData({ projectId }));
 
 afterAll(() => app.delete());
 
@@ -57,7 +57,12 @@ describe("Document.watch", () => {
                 await collectionRef.doc("id-A")
                     .delete();
 
-                await waitFor(() => expect(doc.data).toBe(undefined));
+                await waitFor(
+                    () => expect(doc.data).toBe(undefined),
+                    {
+                        timeout: 8888,
+                    },
+                );
             });
         });
 

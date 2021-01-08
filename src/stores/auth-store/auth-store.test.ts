@@ -46,7 +46,7 @@ const createAuthStore = (auth: any) => {
 describe("AuthStore", () => {
     afterEach(() => {
         jest.clearAllMocks();
-        return clearFirestoreData({projectId});
+        return clearFirestoreData({ projectId });
     });
 
     afterAll(() => app.delete());
@@ -56,22 +56,30 @@ describe("AuthStore", () => {
             const fakeAuth = new FakeAuth();
             const authStore = createAuthStore(fakeAuth);
 
+            await waitFor(() => expect(() => authStore.isAuthInitialised).toBeTruthy());
+
             fakeAuth.authenticate({
                 uid: "id-1",
                 email: "user-1@team-timesheets.com",
                 displayName: "User 1",
             });
 
-            await waitFor(async () => {
-                const doc = await collectionRef.doc("id-1").get();
-                expect(doc.data()).toEqual(
-                    expect.objectContaining({
-                        uid: "id-1",
-                        name: "User 1",
-                        email: "user-1@team-timesheets.com",
-                    }),
-                );
-            });
+            await waitFor(() => expect(() => authStore.activeDocument).toBeDefined());
+
+            await waitFor(
+                async () => {
+                    const doc = await collectionRef.doc("id-1").get();
+                    expect(doc.data()).toEqual(
+                        expect.objectContaining({
+                            uid: "id-1",
+                            name: "User 1",
+                            email: "user-1@team-timesheets.com",
+                        }),
+                    );
+                }, {
+                timeout: 8888,
+            }
+            );
 
             authStore.dispose();
         });
