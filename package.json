@@ -20,7 +20,8 @@
     "build:utils": "tsc --project utils/tsconfig.json --outDir lib/utils --declaration",
     "prepare": "npm-install-peers",
     "preversion": "npm run test:emulator",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "coveralls": "coveralls < coverage/lcov.info"
   },
   "repository": {
     "type": "git",
@@ -53,6 +54,7 @@
     "@rollup/plugin-typescript": "^6.1.0",
     "@testing-library/dom": "^7.28.1",
     "@types/jest": "^24.0.23",
+    "coveralls": "^3.1.0",
     "jest": "^26.6.3",
     "npm-install-peers": "^1.2.1",
     "rollup": "^2.35.1",
