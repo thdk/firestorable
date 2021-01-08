@@ -1,7 +1,7 @@
+import { clearFirestoreData, initializeTestApp } from "@firebase/rules-unit-testing";
 import { waitFor } from "@testing-library/dom";
 
 import { Doc } from "../..";
-import { initTestFirestore } from "../../../utils/test-firestore";
 import { IBook, IBookData } from "../../__test-utils__";
 
 function deserializeBook(book: IBookData): IBook {
@@ -13,14 +13,15 @@ function deserializeBook(book: IBookData): IBook {
     return { ...otherProps, award: newValue };
 }
 
-const { 
-    refs: [collectionRef], 
-    clearFirestoreData,
-    deleteFirebaseApp,
-} = initTestFirestore(
-    "test-document-watch",
-    ["books"]
-);
+const projectId = "test-document-watch";
+
+const app = initializeTestApp({
+    projectId,
+});
+
+const firestore = app.firestore();
+
+const collectionRef = firestore.collection("books");
 
 const dummyBook = {
     total: 5,
@@ -35,9 +36,9 @@ const createDoc = (watch: boolean, id?: string) => {
     }, id);
 };
 
-beforeEach(() => clearFirestoreData());
+beforeEach(() => clearFirestoreData({projectId}));
 
-afterAll(deleteFirebaseApp);
+afterAll(() => app.delete());
 
 describe("Document.watch", () => {
     beforeEach(() => {

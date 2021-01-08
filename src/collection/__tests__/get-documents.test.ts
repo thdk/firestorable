@@ -1,16 +1,14 @@
 import { Collection, ICollectionOptions, Doc } from "../..";
 import { logger, IBook, addItemInBatch } from "../../__test-utils__";
-import { initTestFirestore } from "../../../utils/test-firestore";
+import { clearFirestoreData, initializeTestApp } from "@firebase/rules-unit-testing";
 
-const {
-    firestore,
-    refs: [collectionRef],
-    clearFirestoreData,
-    deleteFirebaseApp,
-} = initTestFirestore(
-    "test-get-documents",
-    ["books"],
-);
+const projectId = "test-get-documents";
+const app = initializeTestApp({
+    projectId,
+});
+
+const firestore = app.firestore();
+const collectionRef = firestore.collection("books");
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
@@ -23,9 +21,9 @@ export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     );
 }
 
-beforeEach(() => clearFirestoreData());
+beforeEach(() => clearFirestoreData({projectId}));
 
-afterAll(deleteFirebaseApp);
+afterAll(() => app.delete());
 
 describe("Collection.getAsync", () => {
 

@@ -1,21 +1,16 @@
 import { CrudStore, StoreOptions } from "./index";
-import { initTestFirestore } from "../../../utils/test-firestore";
 import { waitFor } from "@testing-library/dom";
 import { FetchMode } from "../../collection";
 import { reaction } from "mobx";
+import { clearFirestoreData, initializeTestApp } from "@firebase/rules-unit-testing";
 
 const collection = "books";
-const {
-    firestore,
-    clearFirestoreData,
-    refs: [
-        collectionRef,
-    ],
-    deleteFirebaseApp,
-} = initTestFirestore(
-    "crudstore-test", [
-    "books",
-]);
+const projectId = "crud-store-test";
+const app = initializeTestApp({
+    projectId,
+});
+
+const collectionRef = app.firestore().collection(collection);
 
 const createCrudStore = async (options: Partial<StoreOptions> = {}, preFetch = true) => {
     const crud = new CrudStore({
@@ -26,7 +21,7 @@ const createCrudStore = async (options: Partial<StoreOptions> = {}, preFetch = t
         ...options,
     },
         {
-            firestore,
+            firestore: app.firestore(),
         },
     );
 
@@ -44,10 +39,10 @@ describe("CrudStore", () => {
 
     afterEach(async () => {
         crud.dispose();
-        await clearFirestoreData();
+        await clearFirestoreData({ projectId });
     });
 
-    afterAll(deleteFirebaseApp);
+    afterAll(() => app.delete());
 
     describe("addDocument & deleteDocument", () => {
         it("should add/delete a document to/from the collection", async () => {
@@ -203,7 +198,7 @@ describe("CrudStore", () => {
 
     describe("activeDocument", () => {
         it("should return the data of the document when activeDocumentId is set", async () => {
-            await collectionRef.doc("id-1").set({foo:"bar"});
+            await collectionRef.doc("id-1").set({ foo: "bar" });
             const crud = await createCrudStore();
 
             await waitFor(() => expect(crud.collection.isFetched).toBeTruthy());
@@ -219,7 +214,7 @@ describe("CrudStore", () => {
 
         it("should eventually return the data of the document when activeDocumentId is set", async () => {
             await collectionRef.doc("id-1").set({ foo: "bar" });
-            
+
             const crud = await createCrudStore(undefined, false);
             expect(crud.collection.isFetched).toBeFalsy();
 

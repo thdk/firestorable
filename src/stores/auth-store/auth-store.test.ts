@@ -1,22 +1,16 @@
-import { initTestFirestore } from "../../../utils/test-firestore";
 import { waitFor } from "@testing-library/dom";
 import { AuthStore, AuthStoreUser } from "./auth-store";
 
 import type firebase from "firebase";
 import { FetchMode } from "../../collection";
+import { clearFirestoreData, initializeTestApp } from "@firebase/rules-unit-testing";
 
-const {
-    firestore,
-    clearFirestoreData,
-    refs: [
-        collectionRef,
-    ],
-    deleteFirebaseApp,
-} = initTestFirestore(
-    "authstore-test", [
-    "users",
-]);
+const projectId = "auth-store-test";
+const app = initializeTestApp({
+    projectId,
+});
 
+const collectionRef = app.firestore().collection("users");
 
 class FakeAuth {
     public signOut() {
@@ -37,7 +31,7 @@ const onSignOut = jest.fn();
 const createAuthStore = (auth: any) => {
     return new AuthStore(
         {
-            firestore,
+            firestore: app.firestore(),
             auth: auth as unknown as firebase.auth.Auth,
         },
         {
@@ -52,10 +46,10 @@ const createAuthStore = (auth: any) => {
 describe("AuthStore", () => {
     afterEach(() => {
         jest.clearAllMocks();
-        return clearFirestoreData();
+        return clearFirestoreData({projectId});
     });
 
-    afterAll(deleteFirebaseApp);
+    afterAll(() => app.delete());
 
     describe("when user authenticates for the first time", () => {
         it("should add a new user on first login", async () => {
@@ -149,7 +143,7 @@ describe("AuthStore", () => {
             const fakeAuth = new FakeAuth();
             const authStore = new AuthStore<AuthStoreUser & { bar: string }>(
                 {
-                    firestore,
+                    firestore: app.firestore(),
                     auth: fakeAuth as unknown as firebase.auth.Auth,
                 },
                 undefined,
@@ -192,7 +186,7 @@ describe("AuthStore", () => {
             const fakeAuth = new FakeAuth();
             const authStore = new AuthStore(
                 {
-                    firestore,
+                    firestore: app.firestore(),
                     auth: fakeAuth as unknown as firebase.auth.Auth,
                 },
                 undefined,
