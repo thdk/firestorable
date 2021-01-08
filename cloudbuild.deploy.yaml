@@ -16,7 +16,7 @@ steps:
     - 'FIRESTORE_EMULATOR_HOST=localhost:8080'
 - name: 'node:13-alpine'
   entrypoint: 'npm'
-  args: ["config set //registry.npmjs.org/:_authToken $_NPM_TOKEN"]
+  args: ["config", "set", "//registry.npmjs.org/:_authToken", "$_NPM_TOKEN"]
 - name: 'node:13-alpine'
   entrypoint: 'npm'
   args: ["publish"]
