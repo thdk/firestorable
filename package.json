@@ -17,10 +17,9 @@
     "test:emulator:coverage": "firebase emulators:exec --only firestore \"jest --silent --coverage\"",
     "coverage": "start coverage\\lcov-report\\index.html",
     "build": "rollup -c",
-    "build:utils": "tsc --project utils/tsconfig.json --outDir lib/utils --declaration",
     "prepare": "npm-install-peers",
     "preversion": "npm run test:emulator",
-    "postversion": "git push && git push --tags",
+    "postversion": "git push --follow-tags",
     "coveralls": "coveralls < coverage/lcov.info"
   },
   "repository": {

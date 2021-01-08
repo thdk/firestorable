@@ -1,0 +1,21 @@
+steps:
+- name: 'node:13-alpine'
+  entrypoint: "npm"
+  args: ['ci']
+- name: 'node:13-alpine'
+  entrypoint: "npm"
+  args: ['run', 'prepare']
+- name: 'node:13-alpine'
+  entrypoint: "npm"
+  args: ['run', 'build']
+- name: 'gcr.io/$PROJECT_ID/firebase'
+  entrypoint: "npm"
+  args: ['run', 'test:emulator']
+  env:
+    - 'CI=true'
+    - 'FIRESTORE_EMULATOR_HOST=localhost:8080'
+- name: 'node:13-alpine'
+  entrypoint: 'npm'
+  args: ['publish']
+  env:
+    - 'NPM_TOKEN=$_NPM_TOKEN'
