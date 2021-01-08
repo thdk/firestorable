@@ -60,10 +60,15 @@ export class CrudStore<T = any, K = T> {
 
                     } else {
                         this.activeDocumentField = this.collection.get(id);
-                        if (!this.activeDocumentField) {
+                        if (this.activeDocumentField) {
+                            this.activeDocumentField.watch();
+                        } else {
                             // fetch the registration manually
                             this.collection.getAsync(id)
-                                .then(regDoc => this.activeDocumentField = regDoc)
+                                .then(regDoc => {
+                                    this.activeDocumentField = regDoc;
+                                    this.activeDocumentField.watch();
+                                })
                                 .catch(() => {
                                     this.activeDocumentIdField = undefined;
                                 });
@@ -136,7 +141,7 @@ export class CrudStore<T = any, K = T> {
 
     @computed
     public get activeDocument() {
-        if (this.activeDocumentField) {
+        if (this.activeDocumentField) { 
             return this.activeDocumentField.data;
         }
         return this.newDocumentField.get();
@@ -160,6 +165,9 @@ export class CrudStore<T = any, K = T> {
 
     public dispose() {
         this.disposeFns.reverse().forEach(fn => fn());
+        if (this.activeDocumentField){
+            this.activeDocumentField.unwatch();
+        }
         this.activeDocumentField = undefined;
         this.activeDocumentIdField = undefined;
         this.newDocumentField.set(undefined);
