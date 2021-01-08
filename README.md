@@ -2,6 +2,7 @@
 
 A strong typed observable wrapper using mobx for firebase firestore database.
 
+![Cloud Build](https://storage.googleapis.com/includr-badges/builds/firestorable/branches/master.svg)
 [![Coverage Status](https://coveralls.io/repos/github/thdk/firestorable/badge.svg?branch=master)](https://coveralls.io/github/thdk/firestorable?branch=master)
 
 ## Installation
@@ -118,7 +119,7 @@ Above command will start the emulator, run 'jest', and stop the emulator after t
 * [jest](https://jestjs.io/) - Javascript testing framework
 * [firebase](https://firebase.google.com/) - App development platform
 * [npm](https://www.npmjs.com/) - Package manager
-* [circleCI](https://circleci.com/) - Continuous Integration and Delivery
+* [google cloud build](https://cloud.google.com/cloud-build/) - Build, test, and deploy on googles serverless CI/CD platform
 
 ## Authors
 
