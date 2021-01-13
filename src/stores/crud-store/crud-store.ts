@@ -54,6 +54,9 @@ export class CrudStore<T = any, K = T> {
                 (id) => {
                     if (!id) {
                         transaction(() => {
+                            if (this.activeDocumentField) {
+                                this.activeDocumentField.unwatch();
+                            }
                             this.newDocumentField.set(undefined);
                             this.activeDocumentField = undefined;
                         });
