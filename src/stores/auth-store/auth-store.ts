@@ -159,6 +159,7 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
     }
 
     public signout(): void {
+        this.setUser(null);
         this.auth && this.auth.signOut();
     }
 
