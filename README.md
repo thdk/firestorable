@@ -62,8 +62,28 @@ These instructions will get you a copy of the project for development and testin
 
 ### Prerequisites
 
-You'll need node, npm and java installed.
-(Java is needed to run the tests with a firestore emulotor)
+#### node
+
+I assume you already have node with npm installed.
+
+#### firebase-tools
+You need to have `firebase-tools` installed globally to run the firebase emulator:
+
+```sh
+npm i -g firebase-tools
+```
+
+#### java
+
+[java](https://openjdk.java.net/install/) is required to run the tests with a firestore emulator.
+
+**Install java on linux (debian, ubuntu)**
+
+```sh
+sudo apt-get install openjdk-8-jre
+```
+
+
 
 ### Installing
 
