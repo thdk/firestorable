@@ -7,14 +7,14 @@ import {
 
 import fs from "fs";
 
-import type firebase from "firebase";
+import { app, firestore } from "firebase-admin";
 
 type InitTestFirestoreResult = {
-    refs: firebase.firestore.CollectionReference[];
+    refs: firestore.CollectionReference[];
     clearFirestoreData(): Promise<void>;
     deleteFirebaseApp(): void;
-    app: firebase.app.App;
-    firestore: firebase.firestore.Firestore;
+    app: app.App;
+    firestore: firestore.Firestore;
 }
 
 type AuthUser = { uid: string, email: string };
@@ -24,7 +24,7 @@ const initAuthApp = async (
     collectionNames: string[],
     pathToRules: string,
     authUser: AuthUser,
-) => {
+): Promise<InitTestFirestoreResult> => {
     await loadFirestoreRules({
         projectId,
         rules: fs.readFileSync(pathToRules, "utf8")
@@ -43,9 +43,9 @@ const initAuthApp = async (
         app,
         clearFirestoreData: () => clearFirestoreData(projectId),
         deleteFirebaseApp: () => app.delete(),
-    };
+    } as any; // todo
 }
-export function initTestFirestore(projectId: string, collectionNames: string[]): InitTestFirestoreResult;
+export function initTestFirestore(projectId: string, collectionNames: string[]): any // InitTestFirestoreResult;
 export function initTestFirestore(
     projectId: string,
     collectionNames: string[],

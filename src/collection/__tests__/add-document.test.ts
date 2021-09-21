@@ -1,3 +1,4 @@
+import { firestore as firestoreNamespace } from "firebase-admin";
 import { ICollectionOptions, Collection } from "../..";
 import { initTestFirestore } from "../../../utils/test-firestore";
 import { logger } from "../../__test-utils__";
@@ -68,7 +69,7 @@ describe("Collection.addAsync", () => {
                 })
                     .then(id => {
                         return collectionRef.doc(id).get()
-                            .then(snapshot => {
+                            .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
                                 expect(snapshot.exists).toBe(true);
                             });
                     });
@@ -87,7 +88,7 @@ describe("Collection.addAsync", () => {
                 )
                     .then(() => {
                         return collectionRef.doc("given-id").get()
-                            .then(snapshot => {
+                            .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
                                 expect(snapshot.exists).toBe(true);
                             });
                     });
