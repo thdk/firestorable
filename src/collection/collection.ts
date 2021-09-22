@@ -1,4 +1,4 @@
-import type firebase from "firebase";
+import type firebase from "firebase/compat";
 
 import { addAsync, getAsync } from '../__test-utils__/firestore';
 import {

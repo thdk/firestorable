@@ -1,16 +1,12 @@
 import { waitFor } from "@testing-library/dom";
 import { AuthStore, AuthStoreUser } from "./auth-store";
 
-import type firebase from "firebase";
+import type firebase from "firebase/compat";
 import { FetchMode } from "../../collection";
-import { clearFirestoreData, initializeTestApp } from "@firebase/rules-unit-testing";
+import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
+
 
 const projectId = "auth-store-test";
-const app = initializeTestApp({
-    projectId,
-});
-
-const collectionRef = app.firestore().collection("users");
 
 class FakeAuth {
     public signOut() {
@@ -28,10 +24,10 @@ class FakeAuth {
 }
 
 const onSignOut = jest.fn();
-const createAuthStore = (auth: any) => {
+const createAuthStore = (auth: any, firestore: firebase.firestore.Firestore) => {
     return new AuthStore(
         {
-            firestore: app.firestore(),
+            firestore,
             auth: auth as unknown as firebase.auth.Auth,
         },
         {
@@ -44,17 +40,33 @@ const createAuthStore = (auth: any) => {
 }
 
 describe("AuthStore", () => {
-    afterEach(() => {
-        jest.clearAllMocks();
-        return clearFirestoreData({ projectId });
+    let testEnv: RulesTestEnvironment;
+    let firestore: firebase.firestore.Firestore;
+    let collectionRef: any;
+
+    beforeAll(async () => {
+        testEnv = await initializeTestEnvironment({
+            projectId,
+            firestore: {
+                host: "localhost",
+                port: 8080,
+            }
+        });
+        firestore = testEnv.unauthenticatedContext().firestore();
+        collectionRef = firestore.collection("users");
     });
 
-    afterAll(() => app.delete());
+    afterEach(() => {
+        jest.clearAllMocks();
+        return testEnv.clearFirestore();
+    });
+
+    afterAll(() => testEnv.cleanup());
 
     describe("when user authenticates for the first time", () => {
         it("should add a new user on first login", async () => {
             const fakeAuth = new FakeAuth();
-            const authStore = createAuthStore(fakeAuth);
+            const authStore = createAuthStore(fakeAuth, firestore);
 
             await waitFor(() => expect(() => authStore.isAuthInitialised).toBeTruthy());
 
@@ -86,7 +98,7 @@ describe("AuthStore", () => {
 
         it("should add a new user on first login: only uid", async () => {
             const fakeAuth = new FakeAuth();
-            const authStore = createAuthStore(fakeAuth);
+            const authStore = createAuthStore(fakeAuth, firestore);
 
             fakeAuth.authenticate({
                 uid: "id-1",
@@ -125,7 +137,7 @@ describe("AuthStore", () => {
 
         it("should set the activeDocument with data for the user", async () => {
             const fakeAuth = new FakeAuth();
-            const authStore = createAuthStore(fakeAuth);
+            const authStore = createAuthStore(fakeAuth, firestore);
 
             await waitFor(() => expect(authStore.collection.isFetched).toBeTruthy());
 
@@ -151,7 +163,7 @@ describe("AuthStore", () => {
             const fakeAuth = new FakeAuth();
             const authStore = new AuthStore<AuthStoreUser & { bar: string }>(
                 {
-                    firestore: app.firestore(),
+                    firestore: firestore,
                     auth: fakeAuth as unknown as firebase.auth.Auth,
                 },
                 undefined,
@@ -194,7 +206,7 @@ describe("AuthStore", () => {
             const fakeAuth = new FakeAuth();
             const authStore = new AuthStore(
                 {
-                    firestore: app.firestore(),
+                    firestore: firestore,
                     auth: fakeAuth as unknown as firebase.auth.Auth,
                 },
                 undefined,
@@ -210,7 +222,7 @@ describe("AuthStore", () => {
 
         it("should reset activeDocument and activeDocumentId", async () => {
             const fakeAuth = new FakeAuth();
-            const authStore = createAuthStore(fakeAuth);
+            const authStore = createAuthStore(fakeAuth, firestore);
 
             fakeAuth.authenticate({
                 uid: "id-1",
@@ -227,7 +239,7 @@ describe("AuthStore", () => {
     describe("getLoggedInUser", () => {
         it("should resolve with user when authenticated", () => {
             const fakeAuth = new FakeAuth();
-            const authStore = createAuthStore(fakeAuth);
+            const authStore = createAuthStore(fakeAuth, firestore);
 
             const promise = authStore.getLoggedInUser();
 
@@ -242,7 +254,7 @@ describe("AuthStore", () => {
 
         it("should reject when user is not authenticated", () => {
             const fakeAuth = new FakeAuth();
-            const authStore = createAuthStore(fakeAuth);
+            const authStore = createAuthStore(fakeAuth, firestore);
 
             const promise = authStore.getLoggedInUser();
 

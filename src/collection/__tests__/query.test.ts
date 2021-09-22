@@ -1,44 +1,55 @@
 import { Collection, ICollectionOptions } from "../..";
 import { logger } from "../../__test-utils__";
 import { when, autorun } from "mobx";
-import { initTestFirestore } from "../../../utils/test-firestore";
 
-const {
-    clearFirestoreData,
-    refs: [collectionRef],
-    firestore,
-    deleteFirebaseApp,
-} = initTestFirestore(
-    "test-query",
-    ["books"],
-);
 
-export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
-    return new Collection<T, K>(
-        firestore,
-        collectionRef,
-        options,
-        {
-            logger: logger
-        }
-    );
-}
+import type firebase from "firebase/compat"
+import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
+const projectId = "test-query";
 
-let collection: Collection<{ value: string }>;
 
-beforeEach(() => clearFirestoreData());
-
-afterEach(() => collection.dispose());
-
-afterAll(deleteFirebaseApp);
 
 describe("Collection.query", () => {
+    let firestore: firebase.firestore.Firestore;
+    let testEnv: RulesTestEnvironment;
+    let collectionRef: firebase.firestore.CollectionReference;
+    let collection: Collection<{ value: string }>;
 
-    beforeEach(() => {
+    function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
+        return new Collection<T, K>(
+            firestore,
+            collectionRef,
+            options,
+            {
+                logger: logger
+            }
+        );
+    }
+    
+    beforeAll(async () => {
+        testEnv = await initializeTestEnvironment({
+            projectId,
+            firestore: {
+                host: "localhost",
+                port: 8080,
+            }
+        });
+
+        firestore = testEnv.unauthenticatedContext().firestore();
+        collectionRef = firestore.collection("books");
+    });
+
+    
+    afterAll(() => testEnv.cleanup());
+    
+    beforeEach(async () => {
+        await testEnv.clearFirestore()
         collection = createCollection();
-
+        
         return collection.addAsync({ value: "A" });
     });
+
+    afterEach(() => collection.dispose());
 
     test("it should clear the documents when set to null", () => {
         // Add a dummy observer to documents will get fetched

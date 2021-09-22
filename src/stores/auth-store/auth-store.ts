@@ -1,4 +1,4 @@
-import type firebase from "firebase";
+import type firebase from "firebase/compat";
 
 import { action, transaction, observable, makeObservable } from "mobx";
 import { Collection } from "../../collection";

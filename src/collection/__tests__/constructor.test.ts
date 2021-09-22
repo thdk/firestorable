@@ -1,15 +1,26 @@
+import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { Collection } from "../..";
 
-import { initTestFirestore } from "../../../utils/test-firestore";
+import type firebase from "firebase/compat";
 
-const {
-    firestore,
-} = initTestFirestore(
-    "test-constructor-collection",
-    ["books"],
-);
 
+const projectId = "test-constructor-collection";
 describe("Collection.constructor", () => {
+    let firestore: firebase.firestore.Firestore;
+    let testEnv: RulesTestEnvironment;
+
+    beforeAll(async () => {
+        testEnv = await initializeTestEnvironment({
+            projectId,
+            firestore: {
+                host: "localhost",
+                port: 8080,
+            }
+        });
+
+        firestore = testEnv.unauthenticatedContext().firestore();
+    });
+
     test("it should create a Collection instance with a string as collectionRef", () => {
         const collection = new Collection(firestore, "books");
 

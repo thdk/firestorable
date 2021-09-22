@@ -1,36 +1,44 @@
-import { firestore } from "firebase-admin";
+import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { Collection, ICollectionOptions, RealtimeMode } from "../..";
-import { initTestFirestore } from "../../../utils/test-firestore";
 import { logger } from "../../__test-utils__";
 
-const {
-    firestore: firestoreDb,
-    refs: [collectionRef],
-    clearFirestoreData,
-    deleteFirebaseApp,
-} = initTestFirestore(
-    "test-delete-documents",
-    ["books"]
-);
+import type firebase from "firebase/compat";
 
-export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
-    return new Collection<T, K>(
-        firestoreDb,
-        collectionRef,
-        options,
-        {
-            logger: logger
-        }
-    );
-}
-
-beforeEach(() => clearFirestoreData());
-
-afterAll(deleteFirebaseApp);
-
+const projectId = "test-delete-documents";
 describe("Collection.deleteAsync", () => {
+    let collectionRef: firebase.firestore.CollectionReference;
+    let firestore: firebase.firestore.Firestore;
+    let testEnv: RulesTestEnvironment;
 
-    beforeEach(() => {
+    beforeAll(async () => {
+        testEnv = await initializeTestEnvironment({
+            projectId,
+            firestore: {
+                host: "localhost",
+                port: 8080,
+            }
+        });
+
+        firestore = testEnv.unauthenticatedContext().firestore();
+        collectionRef = firestore.collection("books");
+    });
+
+
+    function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
+        return new Collection<T, K>(
+            firestore,
+            collectionRef,
+            options,
+            {
+                logger: logger
+            }
+        );
+    }
+
+    afterAll(() => testEnv.cleanup());
+
+    beforeEach(async () => {
+        await testEnv.clearFirestore()
         // Add initial data
         return Promise.all([
             collectionRef.doc("id1").set({ total: 1, name: "A" }),
@@ -41,19 +49,19 @@ describe("Collection.deleteAsync", () => {
     });
 
     describe("when collection is not filtered with a query", () => {
-        test("it should delete the document with the given id", () => {
+        it("should delete the document with the given id", () => {
             const collection = createCollection({ realtimeMode: RealtimeMode.off });
 
             return collection.deleteAsync("id2")
                 .then(() => {
                     return collectionRef.doc("id2").get()
-                        .then((doc: firestore.DocumentSnapshot) => {
+                        .then(doc => {
                             expect(doc.exists).toBe(false);
                         });
                 });
         });
 
-        test("it should delete multiple documents", () => {
+        it("should delete multiple documents", () => {
             const collection = createCollection();
 
             return collection.deleteAsync("id2", "id3")

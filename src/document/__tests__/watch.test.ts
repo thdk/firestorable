@@ -1,8 +1,10 @@
-import { clearFirestoreData, initializeTestApp } from "@firebase/rules-unit-testing";
+import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { waitFor } from "@testing-library/dom";
 
 import { Doc } from "../..";
 import { IBook, IBookData } from "../../__test-utils__";
+
+import type firebase from "firebase/compat";
 
 function deserializeBook(book: IBookData): IBook {
     const { award, ...otherProps } = book;
@@ -15,13 +17,6 @@ function deserializeBook(book: IBookData): IBook {
 
 const projectId = "test-document-watch";
 
-const app = initializeTestApp({
-    projectId,
-});
-
-const firestore = app.firestore();
-
-const collectionRef = firestore.collection("books");
 
 const dummyBook = {
     total: 5,
@@ -29,19 +24,35 @@ const dummyBook = {
     award: null,
 };
 
-const createDoc = (watch: boolean, id?: string) => {
-    return new Doc<IBook, IBookData>(collectionRef, dummyBook, {
-        deserialize: deserializeBook,
-        watch,
-    }, id);
-};
-
-beforeEach(() => clearFirestoreData({ projectId }));
-
-afterAll(() => app.delete());
-
 describe("Document.watch", () => {
-    beforeEach(() => {
+    let testEnv: RulesTestEnvironment;
+    let firestore: firebase.firestore.Firestore;
+    let collectionRef: firebase.firestore.CollectionReference;
+    
+    const createDoc = (watch: boolean, id?: string) => {
+        return new Doc<IBook, IBookData>(collectionRef, dummyBook, {
+            deserialize: deserializeBook,
+            watch,
+        }, id);
+    };
+    
+    beforeAll(async () => {
+        testEnv = await initializeTestEnvironment({
+            projectId,
+            firestore: {
+                host: "localhost",
+                port: 8080,
+            }
+        });
+        
+        firestore = testEnv.unauthenticatedContext().firestore();
+        
+        collectionRef = firestore.collection("books");
+    });
+    
+    afterAll(() => testEnv.cleanup());
+    beforeEach(async () => {
+        await testEnv.clearFirestore();
         return collectionRef.doc("id-A").set(dummyBook);
     });
 

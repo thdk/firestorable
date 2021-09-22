@@ -1,19 +1,8 @@
-import { firestore as firestoreNamespace } from "firebase-admin";
+import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { ICollectionOptions, Collection } from "../..";
-import { initTestFirestore } from "../../../utils/test-firestore";
 import { logger } from "../../__test-utils__";
 
-const firebase = require("firebase-admin");
-
-const {
-    firestore,
-    refs: [collectionRef],
-    clearFirestoreData,
-    deleteFirebaseApp,
-} = initTestFirestore(
-    "test-add-documents",
-    ["books"],
-);
+import firebase from "firebase/compat";
 
 interface IBook {
     name: string;
@@ -22,24 +11,39 @@ interface IBook {
     isDeleted?: boolean;
 }
 
-export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
-    return new Collection<T, K>(
-        firestore,
-        collectionRef,
-        options,
-        {
-            logger
-        }
-    );
-}
-
-let collection: Collection<IBook>;
-
-beforeEach(() => clearFirestoreData());
-
-afterAll(deleteFirebaseApp);
-
 describe("Collection.addAsync", () => {
+    let testEnv: RulesTestEnvironment;
+    let collection: Collection<IBook>;
+    let collectionRef: firebase.firestore.CollectionReference;
+    let firestore: firebase.firestore.Firestore;
+
+    function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
+        return new Collection<T, K>(
+            firestore,
+            collectionRef,
+            options,
+            {
+                logger
+            }
+        );
+    }
+
+    beforeEach(() => testEnv.clearFirestore());
+
+    afterAll(() => testEnv.cleanup());
+    beforeAll(async () => {
+        testEnv = await initializeTestEnvironment({
+            projectId: "test-add-documents",
+            firestore: {
+                host: "localhost",
+                port: 8080,
+            }
+        });
+
+        firestore = testEnv.unauthenticatedContext().firestore();
+        collectionRef = firestore.collection("books");
+    });
+
     beforeEach(() => {
         collection = createCollection<IBook>({
             serialize: data => {
@@ -69,7 +73,7 @@ describe("Collection.addAsync", () => {
                 })
                     .then(id => {
                         return collectionRef.doc(id).get()
-                            .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
+                            .then(snapshot => {
                                 expect(snapshot.exists).toBe(true);
                             });
                     });
@@ -88,7 +92,7 @@ describe("Collection.addAsync", () => {
                 )
                     .then(() => {
                         return collectionRef.doc("given-id").get()
-                            .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
+                            .then(snapshot => {
                                 expect(snapshot.exists).toBe(true);
                             });
                     });

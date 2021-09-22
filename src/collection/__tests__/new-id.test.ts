@@ -1,24 +1,40 @@
+import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { Collection, ICollectionOptions } from "../..";
-import { initTestFirestore } from "../../../utils/test-firestore";
 import { logger } from "../../__test-utils__";
 
-const { firestore, refs: [collectionRef] } = initTestFirestore(
-    "test-new-id",
-    ["books"],
-);
-
-export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
-    return new Collection<T, K>(
-        firestore,
-        collectionRef,
-        options,
-        {
-            logger,
-        },
-    );
-}
+import type firebase from "firebase/compat";
 
 describe("Collection.newId", () => {
+
+    let testEnv: RulesTestEnvironment;
+    let collectionRef: firebase.firestore.CollectionReference;
+    let firestore: firebase.firestore.Firestore;
+
+    beforeAll(async () => {
+        testEnv = await initializeTestEnvironment({
+            projectId: "test-new-id",
+            firestore: {
+                host: "localhost",
+                port: 8080,
+            }
+        });
+
+        firestore = testEnv.unauthenticatedContext().firestore();
+        collectionRef = firestore.collection("books");
+    });
+
+    function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
+        return new Collection<T, K>(
+            firestore,
+            collectionRef,
+            options,
+            {
+                logger,
+            },
+        );
+    }
+
+
     it("should return a string", () => {
         const collection = createCollection();
         expect(typeof collection.newId()).toBe("string");
