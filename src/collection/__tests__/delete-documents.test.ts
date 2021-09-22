@@ -1,9 +1,10 @@
+import { firestore } from "firebase-admin";
 import { Collection, ICollectionOptions, RealtimeMode } from "../..";
 import { initTestFirestore } from "../../../utils/test-firestore";
 import { logger } from "../../__test-utils__";
 
 const {
-    firestore,
+    firestore: firestoreDb,
     refs: [collectionRef],
     clearFirestoreData,
     deleteFirebaseApp,
@@ -14,7 +15,7 @@ const {
 
 export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
     return new Collection<T, K>(
-        firestore,
+        firestoreDb,
         collectionRef,
         options,
         {
@@ -46,7 +47,7 @@ describe("Collection.deleteAsync", () => {
             return collection.deleteAsync("id2")
                 .then(() => {
                     return collectionRef.doc("id2").get()
-                        .then(doc => {
+                        .then((doc: firestore.DocumentSnapshot) => {
                             expect(doc.exists).toBe(false);
                         });
                 });

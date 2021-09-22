@@ -1,6 +1,7 @@
 import { Collection, ICollectionOptions } from "../..";
 import { logger, IBook, addItemInBatch } from "../../__test-utils__";
 import { initTestFirestore } from "../../../utils/test-firestore";
+import { firestore as firestoreNamespace } from "firebase-admin";
 
 const {
     firestore,
@@ -59,7 +60,7 @@ describe("Collection.updateAsync", () => {
             return collection.updateAsync({ total: 10 }, "id2")
                 .then(() => {
                     return collectionRef.doc("id2").get()
-                        .then(snapshot => {
+                        .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
                             expect(snapshot.data()!.total).toBe(10);
                         })
                 });
@@ -89,7 +90,7 @@ describe("Collection.updateAsync", () => {
         test("it should allow null value", () => {
             return collection.updateAsync(null, "id2")
                 .then(() => collectionRef.doc("id2").get()
-                    .then(snapshot => {
+                    .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
                         expect(snapshot.data()!.isDeleted).toBe(true);
                         expect(snapshot.data()!.name).toBe("B");
                     })
@@ -116,7 +117,7 @@ describe("Collection.updateAsync", () => {
                 return collection.updateAsync({ total: 10 }, id)
                     .then(() => {
                         return collectionRef.doc(id).get()
-                            .then(snapshot => {
+                            .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
                                 // Verify the document still does not exist
                                 expect(snapshot.exists).toBe(false);
                             });

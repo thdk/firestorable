@@ -1,6 +1,6 @@
 import type firebase from "firebase";
 
-import { observable, computed, action, IObservableValue } from "mobx";
+import { observable, computed, action, IObservableValue, makeObservable } from "mobx";
 
 export interface IDocOptions<T, K> {
     deserialize: (firestoreData: K) => T;
@@ -24,6 +24,11 @@ export class Doc<T, K = T> implements IDoc<T> {
     private unwatchDocument?: () => void;
 
     constructor(collectionRef: firebase.firestore.CollectionReference, data: K | null, options: IDocOptions<T, K>, id?: string) {
+        makeObservable<Doc<T,K>, "setData">(this, {
+            setData: action,
+            data: computed
+        });
+
         const { deserialize, watch } = options;
         this.deserialize = deserialize;
         this.ref = id ? collectionRef.doc(id) : collectionRef.doc();
@@ -33,12 +38,10 @@ export class Doc<T, K = T> implements IDoc<T> {
         if (watch) { this.watch(); }
     }
 
-    @action
     private setData(data: T | undefined) {
         this.dataField.set(data);
     }
 
-    @computed
     public get data(): T | undefined {
         return this.dataField.get();
     }

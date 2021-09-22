@@ -9,6 +9,7 @@ import {
     onBecomeUnobserved,
     computed,
     when,
+    makeObservable,
 } from "mobx";
 
 import { Doc } from "../document";
@@ -62,7 +63,6 @@ export interface ICollectionDependencies {
 export interface ICollection<T, K = T> extends Collection<T, K> { }
 
 export class Collection<T, K = T> {
-    @observable
     private docsContainer = {
         docs: observable<string, Doc<T, K>>(new Map)
     };
@@ -70,15 +70,12 @@ export class Collection<T, K = T> {
     private isObserved = false;
     private name: string;
 
-    @observable.ref
     public query?: ICollectionOptions<T, K>["query"];
 
     /** 'false' until documents are received for the current query */
-    @observable
     public isFetched: boolean = false;
 
     /** 'true' whenever getDocs is fired and 'false' after receiving first snapshot. */
-    @observable
     public isLoading: boolean = false;
 
     private numberOfObservers: number = 0;
@@ -105,6 +102,14 @@ export class Collection<T, K = T> {
         options: ICollectionOptions<T, K> = {},
         dependencies: ICollectionDependencies = {},
     ) {
+        makeObservable<Collection<T,K>, "docsContainer">(this, {
+            docsContainer: observable,
+            query: observable.ref,
+            isFetched: observable,
+            isLoading: observable,
+            docs: computed
+        });
+
         const {
             realtimeMode = RealtimeMode.on,
             fetchMode = FetchMode.auto,
@@ -169,7 +174,6 @@ export class Collection<T, K = T> {
         }
     }
 
-    @computed
     public get docs() {
         return Array.from(this.docsContainer.docs.values());
     }

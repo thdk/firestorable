@@ -1,6 +1,6 @@
 import type firebase from "firebase";
 
-import { observable, action, transaction, computed, reaction } from "mobx";
+import { observable, action, transaction, computed, reaction, makeObservable } from "mobx";
 
 import { Collection, ICollectionDependencies, ICollectionOptions } from "../../collection";
 import { Doc } from "../../document";
@@ -13,10 +13,8 @@ export interface StoreOptions<T = any, K = T> {
 };
 
 export class CrudStore<T = any, K = T> {
-    @observable.ref
     private activeDocumentIdField: string | undefined = undefined;
 
-    @observable.ref
     private activeDocumentField: Doc<T, K> | undefined = undefined;
 
     public readonly collection: Collection<T, K>;
@@ -39,6 +37,15 @@ export class CrudStore<T = any, K = T> {
             firestore: firebase.firestore.Firestore,
         }
     ) {
+        makeObservable<CrudStore, "activeDocumentIdField" | "activeDocumentField">(this, {
+            activeDocumentIdField: observable.ref,
+            activeDocumentField: observable.ref,
+            setActiveDocumentId: action,
+            createNewDocument: action,
+            activeDocument: computed,
+            activeDocumentId: computed
+        });
+
         this.createNewDocumentDefaults = createNewDocumentDefaults;
 
         this.collection = new Collection<T, K>(
@@ -122,12 +129,10 @@ export class CrudStore<T = any, K = T> {
         return this.collection.updateAsync(document, id);
     }
 
-    @action
     public setActiveDocumentId(id?: string) {
         this.activeDocumentIdField = id;
     }
 
-    @action
     public async createNewDocument(document?: Partial<T>) {
         const defaultData: Partial<T> = this.createNewDocumentDefaults
             ? await this.createNewDocumentDefaults()
@@ -142,7 +147,6 @@ export class CrudStore<T = any, K = T> {
         return newDocument;
     }
 
-    @computed
     public get activeDocument() {
         if (this.activeDocumentField) { 
             return this.activeDocumentField.data;
@@ -150,7 +154,6 @@ export class CrudStore<T = any, K = T> {
         return this.newDocumentField.get();
     }
 
-    @computed
     public get activeDocumentId() {
         return this.activeDocumentIdField;
     }

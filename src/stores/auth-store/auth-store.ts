@@ -1,6 +1,6 @@
 import type firebase from "firebase";
 
-import { action, transaction, observable } from "mobx";
+import { action, transaction, observable, makeObservable } from "mobx";
 import { Collection } from "../../collection";
 import { Doc } from "../../document";
 import { CrudStore, StoreOptions } from "../crud-store";
@@ -30,7 +30,6 @@ export const getLoggedInUser = (auth?: firebase.auth.Auth) => {
 };
 
 export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends CrudStore<T, K> {
-    @observable.ref
     isAuthInitialised = false;
 
     private auth?: firebase.auth.Auth;
@@ -72,6 +71,13 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
             }
         );
 
+        makeObservable<AuthStore<T,K>, "getAuthUserSuccess" | "getUserError">(this, {
+            isAuthInitialised: observable.ref,
+            setUser: action,
+            getAuthUserSuccess: action.bound,
+            getUserError: action.bound
+        });
+
         this.auth = auth;
         this.patchExistingUser = patchExistingUser;
         this.onSignOut = onSignOut;
@@ -81,8 +87,6 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
         );
     }
 
-    @action
-    // todo: should be private (currently public for tests)
     public setUser(fbUser: firebase.User | null): void {
         if (!fbUser) {
             transaction(() => {
@@ -145,18 +149,16 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
             });
     }
 
-    @action.bound
     private getAuthUserSuccess = (authUser: Doc<T, K>) => {
         transaction(() => {
             this.isAuthInitialised = true;
             this.setActiveDocumentId(authUser.id);
         });
-    }
+    };
 
-    @action.bound
     private getUserError = (error: any) => {
         console.error(error);
-    }
+    };
 
     public signout(): void {
         this.setUser(null);
