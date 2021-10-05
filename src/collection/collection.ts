@@ -1,4 +1,4 @@
-import type firebase from "firebase/compat";
+import * as types from '@firebase/firestore-types';
 
 import { addAsync, getAsync } from '../__test-utils__/firestore';
 import {
@@ -13,9 +13,19 @@ import {
 } from "mobx";
 
 import { Doc } from "../document";
-
-export type CollectionReference = firebase.firestore.CollectionReference;
-export type Query = firebase.firestore.Query;
+import {
+    collection,
+    CollectionReference,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    PartialWithFieldValue,
+    Query,
+    QuerySnapshot,
+    SetOptions,
+    updateDoc,
+    writeBatch
+} from "firebase/firestore";
 
 export interface IDisposable {
     dispose: () => void;
@@ -49,11 +59,11 @@ export enum FetchMode {
 export interface ICollectionOptions<T, K> {
     realtimeMode?: RealtimeMode;
     fetchMode?: FetchMode;
-    query?: ((ref: CollectionReference) => Query) | null;
+    query?: ((ref: CollectionReference<K>) => Query<K>) | null;
     deserialize?: (firestoreData: K) => T;
-    serialize?: (appData: Partial<T> | null) => Partial<K>;
+    serialize?: (appData: Partial<T> | null) => PartialWithFieldValue<K>;
     name?: string;
-    defaultSetOptions?: firebase.firestore.SetOptions;
+    defaultSetOptions?: SetOptions;
 }
 
 export interface ICollectionDependencies {
@@ -80,7 +90,7 @@ export class Collection<T, K = T> {
 
     private numberOfObservers: number = 0;
 
-    private readonly collectionRef: CollectionReference;
+    private readonly collectionRef: CollectionReference<K>;
     private readonly realtimeMode: RealtimeMode;
     private readonly fetchMode: FetchMode;
 
@@ -90,19 +100,19 @@ export class Collection<T, K = T> {
     private onBecomeUnobservedDisposable?: () => void;
 
     private readonly deserialize: (firestoreData: K) => T;
-    private readonly serialize: (appData: Partial<T> | null) => Partial<K>;
-    private readonly firestore: firebase.firestore.Firestore;
+    private readonly serialize: (appData: Partial<T> | null) => PartialWithFieldValue<K>;
+    private readonly firestore: types.FirebaseFirestore;
     private readonly logger: ICollectionDependencies["logger"];
 
     private defaultSetOptions?: ICollectionOptions<T, K>["defaultSetOptions"];
 
     constructor(
-        firestore: firebase.firestore.Firestore,
-        collection: (() => CollectionReference) | string | CollectionReference,
+        firestore: types.FirebaseFirestore,
+        collectionId: (() => CollectionReference<K>) | string | CollectionReference<K>,
         options: ICollectionOptions<T, K> = {},
         dependencies: ICollectionDependencies = {},
     ) {
-        makeObservable<Collection<T,K>, "docsContainer">(this, {
+        makeObservable<Collection<T, K>, "docsContainer">(this, {
             docsContainer: observable,
             query: observable.ref,
             isFetched: observable,
@@ -115,17 +125,17 @@ export class Collection<T, K = T> {
             fetchMode = FetchMode.auto,
             query,
             deserialize = (x: K) => x as unknown as T,
-            serialize = (x: Partial<T> | null) => x as unknown as Partial<K>,
+            serialize = (x: Partial<T> | null) => x as unknown as PartialWithFieldValue<K>,
             name,
             defaultSetOptions,
         } = options;
 
-        if (typeof collection === "string") {
-            this.collectionRef = firestore.collection(collection);
-        } else if (typeof collection === "function") {
-            this.collectionRef = collection();
+        if (typeof collectionId === "string") {
+            this.collectionRef = collection(firestore, collectionId) as unknown as CollectionReference<K>;
+        } else if (typeof collectionId === "function") {
+            this.collectionRef = collectionId();
         } else {
-            this.collectionRef = collection;
+            this.collectionRef = collectionId;
         }
 
         // Name is used to identify this collection in logs and debug sessions.
@@ -183,7 +193,7 @@ export class Collection<T, K = T> {
     }
 
     public newId() {
-        return this.collectionRef.doc().id;
+        return doc(this.collectionRef).id;
     }
 
     // Todo: only expose fetchAsync if fetchMode = manual
@@ -227,30 +237,29 @@ export class Collection<T, K = T> {
 
         this.isLoading = true;
 
-        this.snapshotDisposable = query
-            .onSnapshot(snapshot => {
-                if (this.realtimeMode === RealtimeMode.off) {
-                    this.cancelSnapshotListener(false);
+        this.snapshotDisposable = onSnapshot(query, snapshot => {
+            if (this.realtimeMode === RealtimeMode.off) {
+                this.cancelSnapshotListener(false);
+            }
+            else {
+                this.log(`Subscribed for updates`);
+            }
+
+            transaction(() => {
+                this.isFetched = true;
+                this.isLoading = false;
+
+                if (canClearCollection) {
+                    canClearCollection = false;
+                    this.clear();
                 }
-                else {
-                    this.log(`Subscribed for updates`);
-                }
 
-                transaction(() => {
-                    this.isFetched = true;
-                    this.isLoading = false;
-
-                    if (canClearCollection) {
-                        canClearCollection = false;
-                        this.clear();
-                    }
-
-                    this.readSnapshot(snapshot);
-                });
+                this.readSnapshot(snapshot);
             });
+        });
     }
 
-    private readSnapshot(snapshot: firebase.firestore.QuerySnapshot) {
+    private readSnapshot(snapshot: QuerySnapshot) {
         if (!snapshot.empty) {
             const docChanges = snapshot.docChanges();
 
@@ -288,7 +297,7 @@ export class Collection<T, K = T> {
      * Returs the collectionRef from the argument if no query has been explicitly set.
      * Returns null if collection query is null. Aka, requesting collection with zero documents.
      */
-    private filter(collectionRef: CollectionReference) {
+    private filter(collectionRef: CollectionReference<K>) {
         if (this.query === null) return null;
 
         return this.query ? this.query(collectionRef) : collectionRef;
@@ -304,14 +313,13 @@ export class Collection<T, K = T> {
                         // GetManyAsync will return an array of Doc<T, K> with the results.
                         // Array can contain strings which represent the ids of missing documents.
                         oldData => typeof oldData !== "string"
-                            ? this.collectionRef.doc(oldData.id)
-                                .update(
-                                    this.serialize(
-                                        data === null
-                                            ? data
-                                            : { ...oldData.data, ...data }
-                                    )
-                                )
+                            ? updateDoc<K>(doc(this.collectionRef, oldData.id),
+                                (this.serialize(
+                                    data === null
+                                        ? data
+                                        : { ...oldData.data, ...data }
+                                )) as any,
+                            )
                             : Promise.resolve() // Trying to update something that doesn't exist
                     )
                 )
@@ -320,8 +328,8 @@ export class Collection<T, K = T> {
 
     // TODO: when realtime updates is disabled, we must manually update the docs!
     public addAsync(data: T[]): Promise<string[]>;
-    public addAsync(data: T, id?: string, setOptions?: firebase.firestore.SetOptions): Promise<string>;
-    public addAsync(data: T | T[], id?: string, setOptions?: firebase.firestore.SetOptions): Promise<string | string[]> {
+    public addAsync(data: T, id?: string, setOptions?: SetOptions): Promise<string>;
+    public addAsync(data: T | T[], id?: string, setOptions?: SetOptions): Promise<string | string[]> {
         const options = setOptions || this.defaultSetOptions
             ? { ...this.defaultSetOptions, ...setOptions }
             : undefined;
@@ -331,16 +339,16 @@ export class Collection<T, K = T> {
                 return Promise.resolve([]);
             }
 
-            const insertedIds = [] as string[];
-            const batch = this.firestore.batch();
-            data.forEach(doc => {
-                const docRef = this.collectionRef.doc();
-                batch.set(docRef, this.serialize(doc), { ...options });
-                insertedIds.push(docRef.id);
+            const insertedDocIds = [] as string[];
+            const batch = writeBatch(this.firestore);
+            data.forEach(docData => {
+                const docRef = doc(this.collectionRef);
+                batch.set(docRef, this.serialize(docData), { ...options });
+                insertedDocIds.push(docRef.id);
             });
 
             return batch.commit()
-                .then(() => insertedIds);
+                .then(() => insertedDocIds);
         } else {
             const firestoreData = this.serialize(data);
             return addAsync(this.collectionRef, firestoreData, id, options);
@@ -377,9 +385,9 @@ export class Collection<T, K = T> {
     public deleteAsync(...ids: string[]) {
         if (ids.length > 1) {
             // remove multiple documents
-            const batch = this.firestore.batch();
+            const batch = writeBatch(this.firestore);
             ids.forEach(id => {
-                batch.delete(this.collectionRef.doc(id));
+                batch.delete(doc(this.collectionRef, id));
             })
 
             return batch.commit();
@@ -387,7 +395,7 @@ export class Collection<T, K = T> {
         } else {
             // single remove
             const id = ids[0];
-            return this.collectionRef.doc(id).delete();
+            return deleteDoc(doc(this.collectionRef, id));
         }
     }
 

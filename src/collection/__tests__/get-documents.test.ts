@@ -1,14 +1,15 @@
 import { Collection, ICollectionOptions, Doc } from "../..";
 import { logger, IBook, addItemInBatch } from "../../__test-utils__";
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
-import type firebase from "firebase/compat";
 
+import { FirebaseFirestore } from "@firebase/firestore-types";
+import { collection, CollectionReference, writeBatch } from "firebase/firestore";
 const projectId = "test-get-documents";
 
 describe("get-documemts", () => {
     let testEnv: RulesTestEnvironment;
-    let firestore: firebase.firestore.Firestore;
-    let collectionRef: firebase.firestore.CollectionReference;
+    let firestore: FirebaseFirestore;
+    let collectionRef: CollectionReference<any>;
 
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
         return new Collection<T, K>(
@@ -31,7 +32,7 @@ describe("get-documemts", () => {
         });
 
         firestore = testEnv.unauthenticatedContext().firestore();
-        collectionRef = firestore.collection("books");
+        collectionRef = collection(firestore, "books");
     })
     beforeEach(() => testEnv.clearFirestore());
 
@@ -40,7 +41,7 @@ describe("get-documemts", () => {
     describe("Collection.getAsync", () => {
         beforeEach(() => {
             // Add initial data
-            const batch = firestore.batch();
+            const batch = writeBatch(firestore);
             addItemInBatch(batch, { total: 1, name: "A" }, collectionRef, "id1");
             addItemInBatch(batch, { total: 2, name: "B" }, collectionRef, "id2");
             addItemInBatch(batch, { total: 3, name: "C" }, collectionRef, "id3");
@@ -76,7 +77,7 @@ describe("get-documemts", () => {
 
         beforeEach(() => {
             // Add initial data
-            const batch = firestore.batch();
+            const batch = writeBatch(firestore);
             addItemInBatch(batch, { total: 1, name: "A" }, collectionRef, "id1");
             addItemInBatch(batch, { total: 2, name: "B" }, collectionRef, "id2");
             addItemInBatch(batch, { total: 3, name: "C" }, collectionRef, "id3");

@@ -2,8 +2,8 @@ import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules
 import { ICollectionOptions, Collection } from "../..";
 import { logger } from "../../__test-utils__";
 
-import firebase from "firebase/compat";
-
+import { FirebaseFirestore } from "@firebase/firestore-types";
+import { collection, CollectionReference, deleteField, doc, getDoc } from "firebase/firestore";
 interface IBook {
     name: string;
     total: number;
@@ -13,9 +13,9 @@ interface IBook {
 
 describe("Collection.addAsync", () => {
     let testEnv: RulesTestEnvironment;
-    let collection: Collection<IBook>;
-    let collectionRef: firebase.firestore.CollectionReference;
-    let firestore: firebase.firestore.Firestore;
+    let bookCollection: Collection<IBook>;
+    let collectionRef: CollectionReference<any>;
+    let firestore: FirebaseFirestore;
 
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
         return new Collection<T, K>(
@@ -41,17 +41,17 @@ describe("Collection.addAsync", () => {
         });
 
         firestore = testEnv.unauthenticatedContext().firestore();
-        collectionRef = firestore.collection("books");
+        collectionRef = collection(firestore, "books");
     });
 
     beforeEach(() => {
-        collection = createCollection<IBook>({
+        bookCollection = createCollection<IBook>({
             serialize: data => {
                 if (!data) {
                     throw new Error("Deleting not supported");
                 }
                 const firestoreData: any = {
-                    award: firebase.firestore.FieldValue.delete(),
+                    award: deleteField(),
                     ...data
                 };
                 return firestoreData;
@@ -67,14 +67,14 @@ describe("Collection.addAsync", () => {
         describe("when no forced id is provided", () => {
             test("it should add the document with a generated id", () => {
 
-                return collection.addAsync({
+                return bookCollection.addAsync({
                     total: 11,
                     name: "Book"
                 })
                     .then(id => {
-                        return collectionRef.doc(id).get()
+                        return getDoc(doc(collectionRef, id))
                             .then(snapshot => {
-                                expect(snapshot.exists).toBe(true);
+                                expect(snapshot.exists()).toBe(true);
                             });
                     });
             });
@@ -83,7 +83,7 @@ describe("Collection.addAsync", () => {
         describe("when a forced id is provided", () => {
             test("it should add the document with the given id", () => {
 
-                return collection.addAsync(
+                return bookCollection.addAsync(
                     {
                         name: "Book",
                         total: 11,
@@ -91,9 +91,9 @@ describe("Collection.addAsync", () => {
                     "given-id"
                 )
                     .then(() => {
-                        return collectionRef.doc("given-id").get()
+                        return getDoc(doc(collectionRef, "given-id"))
                             .then(snapshot => {
-                                expect(snapshot.exists).toBe(true);
+                                expect(snapshot.exists()).toBe(true);
                             });
                     });
             });
@@ -102,19 +102,19 @@ describe("Collection.addAsync", () => {
 
     describe("Adding multiple documents", () => {
         test("it should add the documents with generated ids", () => {
-            return collection.addAsync([
+            return bookCollection.addAsync([
                 { total: 11, name: "Book" },
                 { total: 22, name: "Book 2" }
             ])
                 .then(ids => {
                     return Promise.all(
                         [
-                            collectionRef.doc(ids[0]).get(),
-                            collectionRef.doc(ids[1]).get(),
+                            getDoc(doc(collectionRef, ids[0])),
+                            getDoc(doc(collectionRef, ids[1]))
                         ]
                     ).then(([snapshot1, snapshot2]) => {
-                        expect(snapshot1.exists).toBe(true);
-                        expect(snapshot2.exists).toBe(true);
+                        expect(snapshot1.exists()).toBe(true);
+                        expect(snapshot2.exists()).toBe(true);
                     });
                 });
         });

@@ -3,17 +3,17 @@ import { logger } from "../../__test-utils__";
 import { when, autorun } from "mobx";
 
 
-import type firebase from "firebase/compat"
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
+import { collection, CollectionReference } from "firebase/firestore";
 const projectId = "test-query";
 
-
+import { FirebaseFirestore } from "@firebase/firestore-types";
 
 describe("Collection.query", () => {
-    let firestore: firebase.firestore.Firestore;
+    let firestore: FirebaseFirestore;
     let testEnv: RulesTestEnvironment;
-    let collectionRef: firebase.firestore.CollectionReference;
-    let collection: Collection<{ value: string }>;
+    let collectionRef: CollectionReference<any>;
+    let booksCollection: Collection<{ value: string }>;
 
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
         return new Collection<T, K>(
@@ -25,7 +25,7 @@ describe("Collection.query", () => {
             }
         );
     }
-    
+
     beforeAll(async () => {
         testEnv = await initializeTestEnvironment({
             projectId,
@@ -36,36 +36,36 @@ describe("Collection.query", () => {
         });
 
         firestore = testEnv.unauthenticatedContext().firestore();
-        collectionRef = firestore.collection("books");
+        collectionRef = collection(firestore, "books");
     });
 
-    
+
     afterAll(() => testEnv.cleanup());
-    
+
     beforeEach(async () => {
         await testEnv.clearFirestore()
-        collection = createCollection();
-        
-        return collection.addAsync({ value: "A" });
+        booksCollection = createCollection();
+
+        return booksCollection.addAsync({ value: "A" });
     });
 
-    afterEach(() => collection.dispose());
+    afterEach(() => booksCollection.dispose());
 
     test("it should clear the documents when set to null", () => {
         // Add a dummy observer to documents will get fetched
         autorun(() => {
-            jest.fn()(collection.docs);
+            jest.fn()(booksCollection.docs);
         });
 
-        return when(() => collection.isFetched)
+        return when(() => booksCollection.isFetched)
             .then(() => {
-                expect(collection.docs.length).toBe(1);
+                expect(booksCollection.docs.length).toBe(1);
 
-                collection.query = null;
+                booksCollection.query = null;
 
-                return when(() => collection.isFetched)
+                return when(() => booksCollection.isFetched)
                     .then(() => {
-                        expect(collection.docs.length).toBe(0);
+                        expect(booksCollection.docs.length).toBe(0);
                     });
             });
     });
@@ -73,18 +73,18 @@ describe("Collection.query", () => {
     test("it should clear the documents when set to null even if collection is not being observed anymore", () => {
         // Add a dummy observer to documents will get fetched
         const unobserve = autorun(() => {
-            jest.fn()(collection.docs);
+            jest.fn()(booksCollection.docs);
         });
 
-        return when(() => collection.isFetched)
+        return when(() => booksCollection.isFetched)
             .then(() => {
-                expect(collection.docs.length).toBe(1);
+                expect(booksCollection.docs.length).toBe(1);
 
                 unobserve();
 
-                collection.query = null;
+                booksCollection.query = null;
 
-                expect(collection.docs.length).toBe(0);
+                expect(booksCollection.docs.length).toBe(0);
             });
     });
 });

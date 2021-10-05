@@ -4,7 +4,8 @@ import { waitFor } from "@testing-library/dom";
 import { Doc } from "../..";
 import { IBook, IBookData } from "../../__test-utils__";
 
-import type firebase from "firebase/compat";
+import { collection } from "@firebase/firestore";
+import { FirebaseFirestore as CompatFirestore, CollectionReference } from "@firebase/firestore-types";
 
 function deserializeBook(book: IBookData): IBook {
     const { award, ...otherProps } = book;
@@ -26,11 +27,11 @@ const dummyBook = {
 
 describe("Document.watch", () => {
     let testEnv: RulesTestEnvironment;
-    let firestore: firebase.firestore.Firestore;
-    let collectionRef: firebase.firestore.CollectionReference;
+    let firestore: CompatFirestore;
+    let collectionRef: CollectionReference;
     
     const createDoc = (watch: boolean, id?: string) => {
-        return new Doc<IBook, IBookData>(collectionRef, dummyBook, {
+        return new Doc<IBook, any>(collection(firestore, "books"), dummyBook, {
             deserialize: deserializeBook,
             watch,
         }, id);

@@ -1,12 +1,12 @@
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { Collection } from "../..";
 
-import type firebase from "firebase/compat";
-
+import { FirebaseFirestore } from "@firebase/firestore-types";
+import { collection } from "firebase/firestore";
 
 const projectId = "test-constructor-collection";
 describe("Collection.constructor", () => {
-    let firestore: firebase.firestore.Firestore;
+    let firestore: FirebaseFirestore;
     let testEnv: RulesTestEnvironment;
 
     beforeAll(async () => {
@@ -28,14 +28,14 @@ describe("Collection.constructor", () => {
     });
 
     test("it should create a Collection instance with a function as collectionRef", () => {
-        const collection = new Collection(firestore, () => firestore.collection("books"));
+        const booksCollection = new Collection(firestore, () => collection(firestore, "books"));
 
-        expect(collection).toBeInstanceOf(Collection);
+        expect(booksCollection).toBeInstanceOf(Collection);
     });
 
     test("it should create a Collection instance with a CollectionReference as collectionRef", () => {
-        const collection = new Collection(firestore, firestore.collection("books"));
+        const booksCollection = new Collection(firestore, collection(firestore, "books"));
 
-        expect(collection).toBeInstanceOf(Collection);
+        expect(booksCollection).toBeInstanceOf(Collection);
     });
 });

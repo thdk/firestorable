@@ -1,10 +1,11 @@
 import { waitFor } from "@testing-library/dom";
 import { AuthStore, AuthStoreUser } from "./auth-store";
 
-import type firebase from "firebase/compat";
 import { FetchMode } from "../../collection";
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
+import { Auth, User } from "firebase/auth";
 
+import { FirebaseFirestore } from "@firebase/firestore-types";
 
 const projectId = "auth-store-test";
 
@@ -12,23 +13,23 @@ class FakeAuth {
     public signOut() {
         this.authenticate(undefined);
     }
-    private callback?(user: Partial<firebase.User> | undefined): void;
-    public onAuthStateChanged(callback: (user: Partial<firebase.User> | undefined) => void) {
+    private callback?(user: Partial<User> | undefined): void;
+    public onAuthStateChanged(callback: (user: Partial<User> | undefined) => void) {
         this.callback = callback;
         return jest.fn();
     }
 
-    public authenticate(user: Partial<firebase.User> | undefined) {
+    public authenticate(user: Partial<User> | undefined) {
         this.callback && this.callback(user);
     }
 }
 
 const onSignOut = jest.fn();
-const createAuthStore = (auth: any, firestore: firebase.firestore.Firestore) => {
+const createAuthStore = (auth: any, firestore: FirebaseFirestore) => {
     return new AuthStore(
         {
             firestore,
-            auth: auth as unknown as firebase.auth.Auth,
+            auth: auth as unknown as Auth,
         },
         {
             collection: "users",
@@ -41,7 +42,7 @@ const createAuthStore = (auth: any, firestore: firebase.firestore.Firestore) => 
 
 describe("AuthStore", () => {
     let testEnv: RulesTestEnvironment;
-    let firestore: firebase.firestore.Firestore;
+    let firestore: FirebaseFirestore;
     let collectionRef: any;
 
     beforeAll(async () => {
@@ -164,7 +165,7 @@ describe("AuthStore", () => {
             const authStore = new AuthStore<AuthStoreUser & { bar: string }>(
                 {
                     firestore: firestore,
-                    auth: fakeAuth as unknown as firebase.auth.Auth,
+                    auth: fakeAuth as unknown as Auth,
                 },
                 undefined,
                 {
@@ -207,7 +208,7 @@ describe("AuthStore", () => {
             const authStore = new AuthStore(
                 {
                     firestore: firestore,
-                    auth: fakeAuth as unknown as firebase.auth.Auth,
+                    auth: fakeAuth as unknown as Auth,
                 },
                 undefined,
                 {

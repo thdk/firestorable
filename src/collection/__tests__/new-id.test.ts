@@ -2,13 +2,15 @@ import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules
 import { Collection, ICollectionOptions } from "../..";
 import { logger } from "../../__test-utils__";
 
-import type firebase from "firebase/compat";
+import { FirebaseFirestore } from "@firebase/firestore-types";
+
+import { collection, CollectionReference } from "firebase/firestore";
 
 describe("Collection.newId", () => {
 
     let testEnv: RulesTestEnvironment;
-    let collectionRef: firebase.firestore.CollectionReference;
-    let firestore: firebase.firestore.Firestore;
+    let collectionRef: CollectionReference<any>;
+    let firestore: FirebaseFirestore;
 
     beforeAll(async () => {
         testEnv = await initializeTestEnvironment({
@@ -20,7 +22,7 @@ describe("Collection.newId", () => {
         });
 
         firestore = testEnv.unauthenticatedContext().firestore();
-        collectionRef = firestore.collection("books");
+        collectionRef = collection(firestore, "books");
     });
 
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {

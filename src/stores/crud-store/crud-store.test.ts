@@ -3,12 +3,13 @@ import { waitFor } from "@testing-library/dom";
 import { FetchMode } from "../../collection";
 import { reaction } from "mobx";
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
-import type firebase from "firebase/compat";
+import { FirebaseFirestore, CollectionReference} from "@firebase/firestore-types";
+import { doc, getDoc } from "firebase/firestore";
 
 const collection = "books";
 const projectId = "crud-store-test";
 
-const createCrudStore = async (firestore: firebase.firestore.Firestore,  options: Partial<StoreOptions> = {}, preFetch = true) => {
+const createCrudStore = async (firestore: FirebaseFirestore,  options: Partial<StoreOptions> = {}, preFetch = true) => {
     const crud = new CrudStore({
         collection,
         collectionOptions: {
@@ -29,8 +30,8 @@ const createCrudStore = async (firestore: firebase.firestore.Firestore,  options
 
 describe("CrudStore", () => {
     let testEnv: RulesTestEnvironment;
-    let collectionRef: firebase.firestore.CollectionReference;
-    let firestore: firebase.firestore.Firestore;
+    let collectionRef: CollectionReference;
+    let firestore: FirebaseFirestore;
 
     beforeAll(async () => {
         testEnv = await initializeTestEnvironment({
@@ -144,9 +145,9 @@ describe("CrudStore", () => {
 
     describe("updateActiveDocument", () => {
         it("should update the active document", async () => {
-            const docId = await crud.addDocument({ id: 1 });
+            const id = await crud.addDocument({ id: 1 });
 
-            await crud.setActiveDocumentId(docId);
+            await crud.setActiveDocumentId(id);
 
             await waitFor(() => expect(crud.activeDocument).toEqual(
                 expect.objectContaining({
@@ -159,8 +160,8 @@ describe("CrudStore", () => {
             await crud.updateActiveDocument({ foo: "bar" });
 
             await waitFor(async () => {
-                const doc = await collectionRef.doc(docId).get();
-                expect(doc.data()).toEqual(
+                const docRef = await getDoc(doc(collectionRef, id));
+                expect(docRef.data()).toEqual(
                     expect.objectContaining({
                         id: 1,
                         foo: "bar",

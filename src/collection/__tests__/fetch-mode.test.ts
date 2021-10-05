@@ -3,12 +3,14 @@ import { autorun, when, reaction } from 'mobx';
 import { logger, waitAsync, addItemInBatch } from "../../__test-utils__";
 import { waitFor } from '@testing-library/dom';
 
-import type firebase from "firebase/compat";
 import { initializeTestEnvironment, RulesTestEnvironment } from '@firebase/rules-unit-testing';
 
+import * as types from "@firebase/firestore-types";
+import { addDoc, collection, CollectionReference, query, where, writeBatch } from 'firebase/firestore';
+
 describe("fetch mode", () => {
-    let collectionRef: firebase.firestore.CollectionReference;
-    let firestore: firebase.firestore.Firestore;
+    let collectionRef: CollectionReference<any>;
+    let firestore: types.FirebaseFirestore;
     let testEnv: RulesTestEnvironment;
 
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
@@ -32,7 +34,7 @@ describe("fetch mode", () => {
         });
 
         firestore = testEnv.unauthenticatedContext().firestore();
-        collectionRef = firestore.collection("books");
+        collectionRef = collection(firestore, "books");
     });
 
     beforeEach(() => testEnv.clearFirestore());
@@ -45,7 +47,7 @@ describe("fetch mode", () => {
             collection = createCollection();
 
             // Add initial data
-            return collectionRef.add({ value: "A" });
+            return addDoc(collectionRef, { value: "A" });
         });
 
         describe("when collection.docs becomes observed", () => {
@@ -95,7 +97,7 @@ describe("fetch mode", () => {
                         await waitFor(() => expect(collection.isActive).toBe(false));
 
                         // Add a new document to the collection
-                        await collectionRef.add({ value: "B" });
+                        await addDoc(collectionRef, { value: "B" });
 
                         await waitAsync(50);
 
@@ -155,7 +157,7 @@ describe("fetch mode", () => {
                             expect(collection.isActive).toBe(false);
 
                             // Add a new document to the collection
-                            return collectionRef.add({ value: "B" })
+                            return addDoc(collectionRef, { value: "B" })
                                 .then(() => {
                                     // The new document should not show up in the docs as we are not listening for changes
                                     expect(collection.docs.length).toBe(1);
@@ -169,7 +171,7 @@ describe("fetch mode", () => {
         describe("when query of collection changes", () => {
             beforeEach(() => {
                 // Add extra document to initial data
-                const batch = firestore.batch();
+                const batch = writeBatch(firestore);
                 addItemInBatch(batch, { value: "B" }, collectionRef);
                 return batch.commit();
             });
@@ -184,7 +186,7 @@ describe("fetch mode", () => {
                         // Verify initial state
                         expect(collection.docs.length).toBe(2);
 
-                        collection.query = ref => ref.where("value", "==", "B");
+                        collection.query = ref => query(ref, where("value", "==", "B"));
 
                         expect(collection.isFetched).toBe(false);
 
@@ -201,7 +203,7 @@ describe("fetch mode", () => {
             describe("when the collection has no active listeners", () => {
                 test("it should not fetch documents", () => {
                     const collection = createCollection();
-                    collection.query = ref => ref.where("value", "==", "B");
+                    collection.query = ref => query(ref, where("value", "==", "B"));
 
                     expect(collection.isFetched).toBe(false);
                     expect(collection.isLoading).toBe(false);
@@ -224,7 +226,7 @@ describe("fetch mode", () => {
             });
 
             // Add initial data
-            const batch = firestore.batch();
+            const batch = writeBatch(firestore);
             addItemInBatch(batch, { value: "A" }, collectionRef);
             return batch.commit();
         });
@@ -253,7 +255,7 @@ describe("fetch mode", () => {
 
             test('it should immediately fetch documents', async () => {
                 // Add initial data
-                await collectionRef.add(
+                await addDoc(collectionRef,
                     {
                         value: "A",
                     }

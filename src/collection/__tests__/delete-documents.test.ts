@@ -2,12 +2,13 @@ import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules
 import { Collection, ICollectionOptions, RealtimeMode } from "../..";
 import { logger } from "../../__test-utils__";
 
-import type firebase from "firebase/compat";
+import { FirebaseFirestore } from "@firebase/firestore-types";
+import { collection, CollectionReference, doc, getDoc, setDoc } from "firebase/firestore";
 
 const projectId = "test-delete-documents";
 describe("Collection.deleteAsync", () => {
-    let collectionRef: firebase.firestore.CollectionReference;
-    let firestore: firebase.firestore.Firestore;
+    let collectionRef: CollectionReference<any>;
+    let firestore: FirebaseFirestore;
     let testEnv: RulesTestEnvironment;
 
     beforeAll(async () => {
@@ -20,7 +21,7 @@ describe("Collection.deleteAsync", () => {
         });
 
         firestore = testEnv.unauthenticatedContext().firestore();
-        collectionRef = firestore.collection("books");
+        collectionRef = collection(firestore, "books");
     });
 
 
@@ -41,10 +42,10 @@ describe("Collection.deleteAsync", () => {
         await testEnv.clearFirestore()
         // Add initial data
         return Promise.all([
-            collectionRef.doc("id1").set({ total: 1, name: "A" }),
-            collectionRef.doc("id2").set({ total: 2, name: "B" }),
-            collectionRef.doc("id3").set({ total: 3, name: "C" }),
-            collectionRef.doc("id4").set({ total: 2, name: "C" }),
+            setDoc(doc(collectionRef, "id1"), { total: 1, name: "A" }),
+            setDoc(doc(collectionRef, "id2"), { total: 1, name: "B" }),
+            setDoc(doc(collectionRef, "id3"), { total: 1, name: "C" }),
+            setDoc(doc(collectionRef, "id4"), { total: 1, name: "C" }),
         ]);
     });
 
@@ -54,9 +55,9 @@ describe("Collection.deleteAsync", () => {
 
             return collection.deleteAsync("id2")
                 .then(() => {
-                    return collectionRef.doc("id2").get()
+                    return getDoc(doc(collectionRef, "id2"))
                         .then(doc => {
-                            expect(doc.exists).toBe(false);
+                            expect(doc.exists()).toBe(false);
                         });
                 });
         });
@@ -67,12 +68,12 @@ describe("Collection.deleteAsync", () => {
             return collection.deleteAsync("id2", "id3")
                 .then(() => {
                     return Promise.all([
-                        collectionRef.doc("id2").get(),
-                        collectionRef.doc("id3").get(),
+                        getDoc(doc(collectionRef, "id2")),
+                        getDoc(doc(collectionRef, "id3")),
                     ])
                         .then(([snapshot1, snapshot2]) => {
-                            expect(snapshot1.exists).toBe(false);
-                            expect(snapshot2.exists).toBe(false);
+                            expect(snapshot1.exists()).toBe(false);
+                            expect(snapshot2.exists()).toBe(false);
                         });
                 });
         });
