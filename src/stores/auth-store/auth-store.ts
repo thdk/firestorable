@@ -1,10 +1,11 @@
-import type firebase from "firebase";
-
 import { action, transaction, observable, makeObservable } from "mobx";
 import { Collection } from "../../collection";
 import { Doc } from "../../document";
 import { CrudStore, StoreOptions } from "../crud-store";
 
+import { Auth, User } from "firebase/auth";
+
+import { FirebaseFirestore } from "@firebase/firestore-types";
 export interface AuthStoreUser {
     name?: string;
     email?: string;
@@ -15,12 +16,12 @@ export interface AuthStoreUser {
  * Resolves with firbase.User if user is logged in
  * Rejects if no user is logged in
  */
-export const getLoggedInUser = (auth?: firebase.auth.Auth) => {
+export const getLoggedInUser = (auth?: Auth) => {
     if (!auth) {
         return Promise.reject(new Error("No auth provided"));
     }
 
-    return new Promise<firebase.User>((resolve, reject) => {
+    return new Promise<User>((resolve, reject) => {
         const unsubscribe = auth.onAuthStateChanged(user => {
             unsubscribe();
             if (user) resolve(user);
@@ -32,11 +33,11 @@ export const getLoggedInUser = (auth?: firebase.auth.Auth) => {
 export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends CrudStore<T, K> {
     isAuthInitialised = false;
 
-    private auth?: firebase.auth.Auth;
+    private auth?: Auth;
     private patchExistingUser?(
         user: Doc<T, K>,
         collection: Collection<T, K>,
-        fbUser: firebase.User,
+        fbUser: User,
     ): Promise<Doc<T, K>>;
     private onSignOut?(): void;
 
@@ -46,8 +47,8 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
             firestore,
             auth,
         }: {
-            firestore: firebase.firestore.Firestore,
-            auth?: firebase.auth.Auth,
+            firestore: FirebaseFirestore,
+            auth?: Auth,
         },
         storeOptions: StoreOptions<T, K> = {
             collection: "users",
@@ -59,7 +60,7 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
             patchExistingUser?(
                 user: Doc<T, K>,
                 collection: Collection<T, K>,
-                fbUser: firebase.User,
+                fbUser: User,
             ): Promise<Doc<T, K>>;
             onSignOut?(): void;
         } = {},
@@ -71,7 +72,7 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
             }
         );
 
-        makeObservable<AuthStore<T,K>, "getAuthUserSuccess" | "getUserError">(this, {
+        makeObservable<AuthStore<T, K>, "getAuthUserSuccess" | "getUserError">(this, {
             isAuthInitialised: observable.ref,
             setUser: action,
             getAuthUserSuccess: action.bound,
@@ -87,7 +88,7 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
         );
     }
 
-    public setUser(fbUser: firebase.User | null): void {
+    public setUser(fbUser: User | null): void {
         if (!fbUser) {
             transaction(() => {
                 this.isAuthInitialised = true;
@@ -122,9 +123,9 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
                             newDocument as T,
                             fbUser.uid
                         ).then(
-                            (userId) => {
+                            (id) => {
                                 // get the newly registered user
-                                return this.collection.getAsync(userId)
+                                return this.collection.getAsync(id)
                                     .then(
                                         (user) => this.getAuthUserSuccess(user),
                                         this.getUserError,
@@ -136,7 +137,7 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
         }
     }
 
-    private getAuthenticatedUserAsync(fbUser: firebase.User): Promise<Doc<T, K>> {
+    private getAuthenticatedUserAsync(fbUser: User): Promise<Doc<T, K>> {
         return this.collection.getAsync(fbUser.uid)
             .then((userDoc) => {
                 return this.patchExistingUser

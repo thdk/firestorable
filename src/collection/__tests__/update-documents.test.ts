@@ -1,34 +1,42 @@
 import { Collection, ICollectionOptions } from "../..";
 import { logger, IBook, addItemInBatch } from "../../__test-utils__";
-import { initTestFirestore } from "../../../utils/test-firestore";
-import { firestore as firestoreNamespace } from "firebase-admin";
+import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 
-const {
-    firestore,
-    refs: [collectionRef],
-    clearFirestoreData,
-    deleteFirebaseApp,
-} = initTestFirestore(
-    "test-update-documents",
-    ["books"],
-);
-
-export function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
-    return new Collection<T, K>(
-        firestore,
-        collectionRef,
-        options,
-        {
-            logger
-        }
-    );
-}
-
-beforeEach(() => clearFirestoreData());
-
-afterAll(deleteFirebaseApp);
+import * as types from "@firebase/firestore-types";
+import { collection, CollectionReference, doc, getDoc, writeBatch } from "firebase/firestore";
 
 describe("Collection.updateAsync", () => {
+    let testEnv: RulesTestEnvironment;
+    let collectionRef: CollectionReference<any>;
+    let firestore: types.FirebaseFirestore;
+
+    function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
+        return new Collection<T, K>(
+            firestore,
+            collectionRef,
+            options,
+            {
+                logger
+            }
+        );
+    }
+
+    beforeAll(async () => {
+        testEnv = await initializeTestEnvironment({
+            projectId: "test-update-documents",
+            firestore: {
+                host: "localhost",
+                port: 8080,
+            }
+        });
+
+        firestore = testEnv.unauthenticatedContext().firestore();
+        collectionRef = collection(firestore, "books");
+    });
+
+    beforeEach(() => testEnv.clearFirestore());
+
+    afterAll(() => testEnv.cleanup());
 
     describe("when the original documents exist in the collection", () => {
         let collection: Collection<IBook>;
@@ -46,7 +54,7 @@ describe("Collection.updateAsync", () => {
             });
 
             // Add initial data
-            const batch = firestore.batch();
+            const batch = writeBatch(firestore);
             addItemInBatch(batch, { total: 1, name: "A" }, collectionRef, "id1");
             addItemInBatch(batch, { total: 2, name: "B" }, collectionRef, "id2");
             addItemInBatch(batch, { total: 3, name: "C" }, collectionRef, "id3");
@@ -59,8 +67,8 @@ describe("Collection.updateAsync", () => {
         test("it should update the document with the given id", () => {
             return collection.updateAsync({ total: 10 }, "id2")
                 .then(() => {
-                    return collectionRef.doc("id2").get()
-                        .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
+                    return getDoc(doc(collectionRef, "id2"))
+                        .then(snapshot => {
                             expect(snapshot.data()!.total).toBe(10);
                         })
                 });
@@ -70,9 +78,9 @@ describe("Collection.updateAsync", () => {
             return collection.updateAsync({ total: 10 }, "id1", "id2")
                 .then(() => {
                     return Promise.all([
-                        collectionRef.doc("id1").get(),
-                        collectionRef.doc("id2").get(),
-                        collectionRef.doc("id3").get(),
+                        getDoc(doc(collectionRef, "id1")),
+                        getDoc(doc(collectionRef, "id2")),
+                        getDoc(doc(collectionRef, "id3")),
                     ])
                         .then(([snapshot1, snapshot2, snapshot3]) => {
                             expect(snapshot1.data()!.name).toBe("A");
@@ -89,8 +97,8 @@ describe("Collection.updateAsync", () => {
 
         test("it should allow null value", () => {
             return collection.updateAsync(null, "id2")
-                .then(() => collectionRef.doc("id2").get()
-                    .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
+                .then(() => getDoc(doc(collectionRef, "id2"))
+                    .then(snapshot => {
                         expect(snapshot.data()!.isDeleted).toBe(true);
                         expect(snapshot.data()!.name).toBe("B");
                     })
@@ -99,27 +107,31 @@ describe("Collection.updateAsync", () => {
     });
 
     describe("when the original documents do not exist in the collection", () => {
-        const collection = createCollection();
+        let collection: Collection<IBook>;
+
+        beforeEach(() => {
+            collection = createCollection();
+        });
 
         afterEach(() => collection.dispose());
 
         test("it should not add or update the document with the given id", () => {
             const id = "id2";
-            let promise: Promise<any> = collectionRef.doc(id).get();
+            let promise: Promise<any> = getDoc(doc(collectionRef, id))
 
             // First verify the document did not exist
             promise = promise.then(snapshot => {
-                expect(snapshot.exists).toBe(false);
+                expect(snapshot.exists()).toBe(false);
             });
 
             // Try to update the document that does not exist
             return promise.then(() => {
                 return collection.updateAsync({ total: 10 }, id)
                     .then(() => {
-                        return collectionRef.doc(id).get()
-                            .then((snapshot: firestoreNamespace.DocumentSnapshot) => {
+                        return getDoc(doc(collectionRef, id))
+                            .then(snapshot => {
                                 // Verify the document still does not exist
-                                expect(snapshot.exists).toBe(false);
+                                expect(snapshot.exists()).toBe(false);
                             });
                     });
             });

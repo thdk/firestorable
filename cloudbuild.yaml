@@ -1,8 +1,8 @@
 steps:
-- name: 'node:13-alpine'
+- name: 'node:14-alpine'
   entrypoint: "npm"
   args: ['ci']
-- name: 'node:13-alpine'
+- name: 'node:14-alpine'
   entrypoint: "npm"
   args: ['run', 'build']
 - name: 'gcr.io/$PROJECT_ID/firebase'
@@ -10,8 +10,7 @@ steps:
   args: ['run', 'test:emulator:coverage']
   env:
     - 'CI=true'
-    - 'FIRESTORE_EMULATOR_HOST=localhost:8080'
-- name: 'node:13-alpine'
+- name: 'node:14-alpine'
   entrypoint: 'npm'
   args: ['run', 'coveralls']
   env:

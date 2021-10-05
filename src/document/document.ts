@@ -1,7 +1,6 @@
-import type firebase from "firebase";
-
+import { doc, onSnapshot } from "@firebase/firestore";
 import { observable, computed, action, IObservableValue, makeObservable } from "mobx";
-
+import { CollectionReference, DocumentReference } from "firebase/firestore";
 export interface IDocOptions<T, K> {
     deserialize: (firestoreData: K) => T;
     watch?: boolean;
@@ -18,12 +17,12 @@ export class Doc<T, K = T> implements IDoc<T> {
 
     private dataField: IObservableValue<T | undefined> = observable.box(undefined);
 
-    private ref: firebase.firestore.DocumentReference;
+    private ref: DocumentReference<K>;
     public readonly id: string;
     private deserialize: IDocOptions<T, K>["deserialize"];
     private unwatchDocument?: () => void;
 
-    constructor(collectionRef: firebase.firestore.CollectionReference, data: K | null, options: IDocOptions<T, K>, id?: string) {
+    constructor(collectionRef: CollectionReference<K>, data: K | null, options: IDocOptions<T, K>, id?: string) {
         makeObservable<Doc<T,K>, "setData">(this, {
             setData: action,
             data: computed
@@ -31,7 +30,7 @@ export class Doc<T, K = T> implements IDoc<T> {
 
         const { deserialize, watch } = options;
         this.deserialize = deserialize;
-        this.ref = id ? collectionRef.doc(id) : collectionRef.doc();
+        this.ref = id ? doc(collectionRef, id) : doc(collectionRef);
         this.id = this.ref.id;
         this.setData(data ? deserialize(data) : undefined);
 
@@ -47,7 +46,7 @@ export class Doc<T, K = T> implements IDoc<T> {
     }
 
     public watch() {
-        this.unwatchDocument = this.ref.onSnapshot(snapshot => {
+        this.unwatchDocument = onSnapshot(this.ref, snapshot => {
             // snapshot data can be undefined when document get's deleted
             const data = snapshot.data();
             this.dataField.set(data ? this.deserialize(data as unknown as K) : undefined);

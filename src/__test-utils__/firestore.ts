@@ -1,32 +1,38 @@
-import type firebase from "firebase";
+import {
+    addDoc,
+    doc,
+    PartialWithFieldValue,
+    setDoc,
+    WithFieldValue,
+    SetOptions,
+    getDoc,
+    CollectionReference,
+    WriteBatch,
+} from "firebase/firestore";
 
-export const addAsync = <T>(
-    collectionRef: firebase.firestore.CollectionReference,
-    data: Partial<T>,
+export function addAsync<T>(
+    collectionRef: CollectionReference<T>,
+    data: WithFieldValue<T> | PartialWithFieldValue<T>,
     id?: string,
-    setOptions?: firebase.firestore.SetOptions,
-) => {
+    setOptions?: SetOptions,
+) {
     if (id || setOptions) {
-        const docRef = id ? collectionRef.doc(id) : collectionRef.doc();
-        return docRef
-            .set(data, { ...setOptions })
+        const docRef = id ? doc(collectionRef, id) : doc(collectionRef);
+        return setDoc(docRef, data, { ...setOptions })
             .then(() => docRef.id);
     }
 
-    return collectionRef
-        .add(data)
-        .then(docRef => docRef.id);
+    return addDoc(collectionRef, data as WithFieldValue<T>).then((ref) => ref.id);
 };
 
 /**
  * Returns a promise that resolves with T if document with id exists
  * or rejects if document with id does not exist.
  */
-export function getAsync<T>(collectionRef: firebase.firestore.CollectionReference, id: string) {
-    return collectionRef.doc(id)
-        .get()
+export function getAsync<T>(collectionRef: CollectionReference<T>, id: string) {
+    return getDoc(doc(collectionRef, id))
         .then(d => {
-            if (!d.exists) {
+            if (!d.exists()) {
                 throw new Error(`Collection '${collectionRef.id}' contains no document with id '${id}'`);
             }
 
@@ -35,11 +41,11 @@ export function getAsync<T>(collectionRef: firebase.firestore.CollectionReferenc
 };
 
 export const addItemInBatch = (
-    batch: firebase.firestore.WriteBatch,
+    batch: WriteBatch,
     data: any,
-    collectionRef: firebase.firestore.CollectionReference,
+    collectionRef: CollectionReference,
     id?: string,
 ) => {
-    const doc = id === undefined ? collectionRef.doc() : collectionRef.doc(id);
-    batch.set(doc, data);
+    const docRef = id === undefined ? doc(collectionRef) : doc(collectionRef, id);
+    batch.set(docRef, data);
 };
