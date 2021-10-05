@@ -38,6 +38,7 @@ describe("fetch mode", () => {
     });
 
     beforeEach(() => testEnv.clearFirestore());
+    afterAll(() => testEnv.cleanup());
 
     describe("With fetch mode = auto:", () => {
         let collection: Collection<{ value: string }>;

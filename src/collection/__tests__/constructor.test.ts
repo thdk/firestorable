@@ -21,6 +21,7 @@ describe("Collection.constructor", () => {
         firestore = testEnv.unauthenticatedContext().firestore();
     });
 
+    afterAll(() => testEnv.cleanup());
     test("it should create a Collection instance with a string as collectionRef", () => {
         const collection = new Collection(firestore, "books");
 

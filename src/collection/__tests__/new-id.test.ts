@@ -25,6 +25,8 @@ describe("Collection.newId", () => {
         collectionRef = collection(firestore, "books");
     });
 
+    afterAll(() => testEnv.cleanup());
+
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
         return new Collection<T, K>(
             firestore,
