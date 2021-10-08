@@ -22,10 +22,7 @@
     "postversion": "git push --follow-tags",
     "coveralls": "coveralls < coverage/lcov.info"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/thdk/firestorable.git"
-  },
+  "repository": "github:thdk/firestorable",
   "keywords": [
     "firestore",
     "mobx",
