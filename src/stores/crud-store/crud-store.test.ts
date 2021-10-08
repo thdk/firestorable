@@ -3,15 +3,14 @@ import { waitFor } from "@testing-library/dom";
 import { FetchMode } from "../../collection";
 import { reaction } from "mobx";
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
-import { FirebaseFirestore, CollectionReference} from "@firebase/firestore-types";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, CollectionReference, doc, getDoc, setDoc } from "firebase/firestore";
 
-const collection = "books";
+const collectionId = "books";
 const projectId = "crud-store-test";
 
-const createCrudStore = async (firestore: FirebaseFirestore,  options: Partial<StoreOptions> = {}, preFetch = true) => {
+const createCrudStore = async (firestore: any,  options: Partial<StoreOptions> = {}, preFetch = true) => {
     const crud = new CrudStore({
-        collection,
+        collection: collectionId,
         collectionOptions: {
             fetchMode: FetchMode.manual,
         },
@@ -31,7 +30,7 @@ const createCrudStore = async (firestore: FirebaseFirestore,  options: Partial<S
 describe("CrudStore", () => {
     let testEnv: RulesTestEnvironment;
     let collectionRef: CollectionReference;
-    let firestore: FirebaseFirestore;
+    let firestore: any;
 
     beforeAll(async () => {
         testEnv = await initializeTestEnvironment({
@@ -43,7 +42,7 @@ describe("CrudStore", () => {
         });
 
         firestore = testEnv.unauthenticatedContext().firestore();
-        collectionRef = firestore.collection(collection);
+        collectionRef = collection(firestore, collectionId);
     });
 
     let crud: CrudStore;
@@ -212,7 +211,7 @@ describe("CrudStore", () => {
 
     describe("activeDocument", () => {
         it("should return the data of the document when activeDocumentId is set", async () => {
-            await collectionRef.doc("id-1").set({ foo: "bar" });
+            await setDoc(doc(collectionRef, "id-1"), { foo: "bar" });
             const crud = await createCrudStore(firestore);
 
             await waitFor(() => expect(crud.collection.isFetched).toBeTruthy());
@@ -227,7 +226,7 @@ describe("CrudStore", () => {
         });
 
         it("should eventually return the data of the document when activeDocumentId is set", async () => {
-            await collectionRef.doc("id-1").set({ foo: "bar" });
+            await setDoc(doc(collectionRef, "id-1"), { foo: "bar" });
 
             const crud = await createCrudStore(firestore, undefined, false);
             expect(crud.collection.isFetched).toBeFalsy();
@@ -242,7 +241,7 @@ describe("CrudStore", () => {
         });
 
         it("should watch the data of the document when it's changed in the database", async () => {
-            await collectionRef.doc("id-1").set({foo:"bar"});
+            await setDoc(doc(collectionRef, "id-1"), { foo: "bar" });
             const crud = await createCrudStore(firestore);
 
             await waitFor(() => expect(crud.collection.isFetched).toBeTruthy());
@@ -255,7 +254,7 @@ describe("CrudStore", () => {
                 }))
             );
 
-            await collectionRef.doc("id-1").update({foo:"bar bar"});
+            await setDoc(doc(collectionRef, "id-1"), { foo: "bar bar" });
 
             await waitFor(() => expect(crud.activeDocument).toEqual(
                 expect.objectContaining({
@@ -265,7 +264,7 @@ describe("CrudStore", () => {
         });
 
         it("should be undefined when activeDocumentId is set to invalid document id", async () => {
-            await collectionRef.doc("id-1").set({foo:"bar"});
+            await setDoc(doc(collectionRef, "id-1"), { foo: "bar" });
             const crud = await createCrudStore(firestore);
 
             await waitFor(() => expect(crud.collection.isFetched).toBeTruthy());

@@ -2,13 +2,12 @@ import { Collection, ICollectionOptions } from "../..";
 import { logger, IBook, addItemInBatch } from "../../__test-utils__";
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 
-import * as types from "@firebase/firestore-types";
 import { collection, CollectionReference, doc, getDoc, writeBatch } from "firebase/firestore";
 
 describe("Collection.updateAsync", () => {
     let testEnv: RulesTestEnvironment;
     let collectionRef: CollectionReference<any>;
-    let firestore: types.FirebaseFirestore;
+    let firestore: any;
 
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
         return new Collection<T, K>(

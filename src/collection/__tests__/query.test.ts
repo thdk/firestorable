@@ -7,10 +7,8 @@ import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules
 import { collection, CollectionReference } from "firebase/firestore";
 const projectId = "test-query";
 
-import { FirebaseFirestore } from "@firebase/firestore-types";
-
 describe("Collection.query", () => {
-    let firestore: FirebaseFirestore;
+    let firestore: any;
     let testEnv: RulesTestEnvironment;
     let collectionRef: CollectionReference<any>;
     let booksCollection: Collection<{ value: string }>;

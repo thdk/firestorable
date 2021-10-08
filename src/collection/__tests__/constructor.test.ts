@@ -1,12 +1,11 @@
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { Collection } from "../..";
 
-import { FirebaseFirestore } from "@firebase/firestore-types";
 import { collection } from "firebase/firestore";
 
 const projectId = "test-constructor-collection";
 describe("Collection.constructor", () => {
-    let firestore: FirebaseFirestore;
+    let firestore: any;
     let testEnv: RulesTestEnvironment;
 
     beforeAll(async () => {

@@ -2,13 +2,12 @@ import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules
 import { Collection, ICollectionOptions, RealtimeMode } from "../..";
 import { logger } from "../../__test-utils__";
 
-import { FirebaseFirestore } from "@firebase/firestore-types";
 import { collection, CollectionReference, doc, getDoc, setDoc } from "firebase/firestore";
 
 const projectId = "test-delete-documents";
 describe("Collection.deleteAsync", () => {
     let collectionRef: CollectionReference<any>;
-    let firestore: FirebaseFirestore;
+    let firestore: any;
     let testEnv: RulesTestEnvironment;
 
     beforeAll(async () => {

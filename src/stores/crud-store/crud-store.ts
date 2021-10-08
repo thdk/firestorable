@@ -1,4 +1,4 @@
-import { FirebaseFirestore} from "@firebase/firestore-types";
+import type { Firestore } from "firebase/firestore";
 
 import { observable, action, transaction, computed, reaction, makeObservable } from "mobx";
 
@@ -34,7 +34,7 @@ export class CrudStore<T = any, K = T> {
         {
             firestore
         }: {
-            firestore: FirebaseFirestore,
+            firestore: Firestore,
         }
     ) {
         makeObservable<CrudStore, "activeDocumentIdField" | "activeDocumentField">(this, {

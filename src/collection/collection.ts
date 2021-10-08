@@ -1,5 +1,3 @@
-import * as types from '@firebase/firestore-types';
-
 import { addAsync, getAsync } from '../__test-utils__/firestore';
 import {
     observable,
@@ -18,6 +16,7 @@ import {
     CollectionReference,
     deleteDoc,
     doc,
+    Firestore,
     onSnapshot,
     PartialWithFieldValue,
     Query,
@@ -101,13 +100,13 @@ export class Collection<T, K = T> {
 
     private readonly deserialize: (firestoreData: K) => T;
     private readonly serialize: (appData: Partial<T> | null) => PartialWithFieldValue<K>;
-    private readonly firestore: types.FirebaseFirestore;
+    private readonly firestore: Firestore;
     private readonly logger: ICollectionDependencies["logger"];
 
     private defaultSetOptions?: ICollectionOptions<T, K>["defaultSetOptions"];
 
     constructor(
-        firestore: types.FirebaseFirestore,
+        firestore: Firestore,
         collectionId: (() => CollectionReference<K>) | string | CollectionReference<K>,
         options: ICollectionOptions<T, K> = {},
         dependencies: ICollectionDependencies = {},

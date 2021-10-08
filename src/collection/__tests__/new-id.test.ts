@@ -2,15 +2,13 @@ import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules
 import { Collection, ICollectionOptions } from "../..";
 import { logger } from "../../__test-utils__";
 
-import { FirebaseFirestore } from "@firebase/firestore-types";
-
 import { collection, CollectionReference } from "firebase/firestore";
 
 describe("Collection.newId", () => {
 
     let testEnv: RulesTestEnvironment;
     let collectionRef: CollectionReference<any>;
-    let firestore: FirebaseFirestore;
+    let firestore: any;
 
     beforeAll(async () => {
         testEnv = await initializeTestEnvironment({

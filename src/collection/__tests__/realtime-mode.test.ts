@@ -2,14 +2,13 @@ import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules
 import { Collection, ICollectionOptions, FetchMode, RealtimeMode } from "../..";
 import { logger, addItemInBatch } from "../../__test-utils__";
 
-import {FirebaseFirestore} from "@firebase/firestore-types";
 import { CollectionReference, collection, writeBatch, setDoc, doc, addDoc, deleteDoc, query, where } from "firebase/firestore";
 
 describe("realtime mode", () => {
     let booksCollection: Collection<{ value: string }>;
     let testEnv: RulesTestEnvironment;
     let collectionRef: CollectionReference<any>;
-    let firestore: FirebaseFirestore;
+    let firestore: any;
 
     beforeAll(async () => {
         testEnv = await initializeTestEnvironment({

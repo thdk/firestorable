@@ -3,9 +3,9 @@ import { Collection } from "../../collection";
 import { Doc } from "../../document";
 import { CrudStore, StoreOptions } from "../crud-store";
 
-import { Auth, User } from "firebase/auth";
+import type { Auth, User } from "firebase/auth";
+import type { Firestore } from "firebase/firestore";
 
-import { FirebaseFirestore } from "@firebase/firestore-types";
 export interface AuthStoreUser {
     name?: string;
     email?: string;
@@ -47,7 +47,7 @@ export class AuthStore<T extends AuthStoreUser = AuthStoreUser, K = T> extends C
             firestore,
             auth,
         }: {
-            firestore: FirebaseFirestore,
+            firestore: Firestore,
             auth?: Auth,
         },
         storeOptions: StoreOptions<T, K> = {

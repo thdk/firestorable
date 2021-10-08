@@ -5,12 +5,11 @@ import { waitFor } from '@testing-library/dom';
 
 import { initializeTestEnvironment, RulesTestEnvironment } from '@firebase/rules-unit-testing';
 
-import * as types from "@firebase/firestore-types";
 import { addDoc, collection, CollectionReference, query, where, writeBatch } from 'firebase/firestore';
 
 describe("fetch mode", () => {
     let collectionRef: CollectionReference<any>;
-    let firestore: types.FirebaseFirestore;
+    let firestore: any;
     let testEnv: RulesTestEnvironment;
 
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {

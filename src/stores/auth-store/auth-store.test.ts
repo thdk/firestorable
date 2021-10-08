@@ -5,7 +5,7 @@ import { FetchMode } from "../../collection";
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { Auth, User } from "firebase/auth";
 
-import { FirebaseFirestore } from "@firebase/firestore-types";
+import type { Firestore } from "firebase/firestore";
 
 const projectId = "auth-store-test";
 
@@ -25,7 +25,7 @@ class FakeAuth {
 }
 
 const onSignOut = jest.fn();
-const createAuthStore = (auth: any, firestore: FirebaseFirestore) => {
+const createAuthStore = (auth: any, firestore: Firestore) => {
     return new AuthStore(
         {
             firestore,
@@ -42,7 +42,7 @@ const createAuthStore = (auth: any, firestore: FirebaseFirestore) => {
 
 describe("AuthStore", () => {
     let testEnv: RulesTestEnvironment;
-    let firestore: FirebaseFirestore;
+    let firestore: any;
     let collectionRef: any;
 
     beforeAll(async () => {

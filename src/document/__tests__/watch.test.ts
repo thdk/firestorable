@@ -4,8 +4,8 @@ import { waitFor } from "@testing-library/dom";
 import { Doc } from "../..";
 import { IBook, IBookData } from "../../__test-utils__";
 
-import { collection } from "@firebase/firestore";
-import { FirebaseFirestore as CompatFirestore, CollectionReference } from "@firebase/firestore-types";
+import { collection, deleteDoc } from "@firebase/firestore";
+import { CollectionReference, doc, setDoc } from "firebase/firestore";
 
 function deserializeBook(book: IBookData): IBook {
     const { award, ...otherProps } = book;
@@ -27,7 +27,7 @@ const dummyBook = {
 
 describe("Document.watch", () => {
     let testEnv: RulesTestEnvironment;
-    let firestore: CompatFirestore;
+    let firestore: any;
     let collectionRef: CollectionReference;
     
     const createDoc = (watch: boolean, id?: string) => {
@@ -48,29 +48,28 @@ describe("Document.watch", () => {
         
         firestore = testEnv.unauthenticatedContext().firestore();
         
-        collectionRef = firestore.collection("books");
+        collectionRef = collection(firestore, "books");
     });
     
     afterAll(() => testEnv.cleanup());
     beforeEach(async () => {
         await testEnv.clearFirestore();
-        return collectionRef.doc("id-A").set(dummyBook);
+        return setDoc(doc(collectionRef, "id-A"), dummyBook);
     });
 
     describe("when watch = true", () => {
-        let doc: Doc<IBook, IBookData>;
+        let document: Doc<IBook, IBookData>;
 
         beforeEach(() => {
-            doc = createDoc(true, "id-A");
+            document = createDoc(true, "id-A");
         });
 
         describe("when document gets deleted in the database", () => {
             it("should set data property of document to undefined", async () => {
-                await collectionRef.doc("id-A")
-                    .delete();
+                await deleteDoc(doc(collectionRef, "id-A"))
 
                 await waitFor(
-                    () => expect(doc.data).toBe(undefined),
+                    () => expect(document.data).toBe(undefined),
                     {
                         timeout: 8888,
                     },
@@ -80,44 +79,41 @@ describe("Document.watch", () => {
 
         describe("when document is updated in database", () => {
             test("it should respond to changes", () => {
-                return collectionRef.doc("id-A")
-                    .set({
+                return setDoc(doc(collectionRef, "id-A"), {
                         award: 3,
                     })
                     .then(() => {
-                        return waitFor(() => expect(doc.data!.award).toBe(3));
+                        return waitFor(() => expect(document.data!.award).toBe(3));
                     });
             });
         });
 
         describe("when unwatch() is called on document", () => {
             test("it should not respond to changes anymore", () => {
-                doc.unwatch();
+                document.unwatch();
 
-                return collectionRef.doc("id-A")
-                    .set({
+                return setDoc(doc(collectionRef, "id-A"), {
                         award: 3,
                     })
                     .then(() => {
-                        expect(doc.data?.award).toBe(undefined);
+                        expect(document.data?.award).toBe(undefined);
                     });
             });
         });
     });
 
     describe("when watch = false", () => {
-        let doc: Doc<IBook, IBookData>;
+        let document: Doc<IBook, IBookData>;
 
         beforeEach(() => {
-            doc = createDoc(false);
+            document = createDoc(false);
         });
 
         describe("when document gets deleted in the database", () => {
             it("should NOT set data property of document to undefined", () => {
-                return collectionRef.doc("id-A")
-                    .delete()
+                return deleteDoc(doc(collectionRef, "id-A"))
                     .then(() => {
-                        expect(doc.data).toEqual({
+                        expect(document.data).toEqual({
                             name: "book a",
                             award: undefined,
                             total: 5,

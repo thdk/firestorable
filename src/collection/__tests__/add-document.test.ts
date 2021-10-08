@@ -2,7 +2,6 @@ import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules
 import { ICollectionOptions, Collection } from "../..";
 import { logger } from "../../__test-utils__";
 
-import { FirebaseFirestore } from "@firebase/firestore-types";
 import { collection, CollectionReference, deleteField, doc, getDoc } from "firebase/firestore";
 interface IBook {
     name: string;
@@ -15,7 +14,7 @@ describe("Collection.addAsync", () => {
     let testEnv: RulesTestEnvironment;
     let bookCollection: Collection<IBook>;
     let collectionRef: CollectionReference<any>;
-    let firestore: FirebaseFirestore;
+    let firestore: any;
 
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
         return new Collection<T, K>(

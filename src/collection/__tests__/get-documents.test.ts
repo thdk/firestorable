@@ -2,13 +2,12 @@ import { Collection, ICollectionOptions, Doc } from "../..";
 import { logger, IBook, addItemInBatch } from "../../__test-utils__";
 import { initializeTestEnvironment, RulesTestEnvironment } from "@firebase/rules-unit-testing";
 
-import { FirebaseFirestore } from "@firebase/firestore-types";
 import { collection, CollectionReference, writeBatch } from "firebase/firestore";
 const projectId = "test-get-documents";
 
 describe("get-documemts", () => {
     let testEnv: RulesTestEnvironment;
-    let firestore: FirebaseFirestore;
+    let firestore: any;
     let collectionRef: CollectionReference<any>;
 
     function createCollection<T, K = T>(options?: ICollectionOptions<T, K>) {
