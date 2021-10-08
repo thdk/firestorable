@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.4.2](https://github.com/thdk/firestorable/compare/v1.4.2...v1.4.2)
+## [v2.0.0](https://github.com/thdk/firestorable/compare/v1.4.2...v2.0.0)
 
 ### Merged
 
@@ -18,7 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - chore: upgrade firebase to latest version (compat mode) [`f8b98e4`](https://github.com/thdk/firestorable/commit/f8b98e4179a687694af941310acb94cfdb82fff7)
 - chore: upgrade to mobx 6 [`4087e34`](https://github.com/thdk/firestorable/commit/4087e3495cbeaabd008149934ae62c2780ccf1e5)
 - chore: use modular firebase api functions [`30d58eb`](https://github.com/thdk/firestorable/commit/30d58eb3466396e01f77aeb995029cc37f01b8bc)
-- chore: set up auto-changelog [`5639ca8`](https://github.com/thdk/firestorable/commit/5639ca89b91dc6e0d9eea95845a31d0862b1bbe3)
+- chore: upgrade dependencies [`e3b8b67`](https://github.com/thdk/firestorable/commit/e3b8b67587ecc44e926c4468e635e757d39b058c)
+- fix: don't use firebase compat types [`7d5ab57`](https://github.com/thdk/firestorable/commit/7d5ab5747355ee806d5d8838a04d98f3590b6956)
+- chore: set up auto-changelog [`0bdc2dc`](https://github.com/thdk/firestorable/commit/0bdc2dca8bd41388a6572795fe13eaad3c264300)
 - fix: use more correct typings in test files [`4228514`](https://github.com/thdk/firestorable/commit/422851436490c4606f28551db818e8ab6a472181)
 - tests: cleanup test environment for all tests [`50300ab`](https://github.com/thdk/firestorable/commit/50300ab6237561e71c806b6634f5c291252ed33a)
 - docs: update prerequisites in readme [`fe61253`](https://github.com/thdk/firestorable/commit/fe61253f9cb5777b79033ed0115916582382eb10)
