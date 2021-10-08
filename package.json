@@ -18,6 +18,7 @@
     "coverage": "start coverage\\lcov-report\\index.html",
     "build": "rollup -c",
     "preversion": "npm run test:emulator",
+    "version": "auto-changelog && git add CHANGELOG.md",
     "postversion": "git push --follow-tags",
     "coveralls": "coveralls < coverage/lcov.info"
   },
@@ -53,6 +54,7 @@
     "@rollup/plugin-typescript": "^8.2.5",
     "@testing-library/dom": "^7.28.1",
     "@types/jest": "^24.0.23",
+    "auto-changelog": "^2.3.0",
     "coveralls": "^3.1.0",
     "firebase": "^9.1.1",
     "firebase-admin": "^9.11.1",

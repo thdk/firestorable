@@ -1,0 +1,7 @@
+{
+    "startingVersion": "v1.4.2",
+    "hideCredit": true,
+    "template": "keepachangelog",
+    "package": true,
+    "commitLimit": false
+}
