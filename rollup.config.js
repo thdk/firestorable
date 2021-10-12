@@ -7,9 +7,8 @@ const input = `src/index.ts`;
 
 const external = [
   "mobx",
-  "firebase/app",
+  "firebase/auth",
   "firebase/firestore",
-  "@firebase/rules-unit-testing",
 ];
 
 export default [{  // Commonjs

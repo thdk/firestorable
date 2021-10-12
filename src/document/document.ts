@@ -1,4 +1,4 @@
-import { doc, onSnapshot } from "@firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { observable, computed, action, IObservableValue, makeObservable } from "mobx";
 import { CollectionReference, DocumentReference } from "firebase/firestore";
 export interface IDocOptions<T, K> {

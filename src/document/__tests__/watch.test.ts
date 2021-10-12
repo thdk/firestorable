@@ -4,7 +4,7 @@ import { waitFor } from "@testing-library/dom";
 import { Doc } from "../..";
 import { IBook, IBookData } from "../../__test-utils__";
 
-import { collection, deleteDoc } from "@firebase/firestore";
+import { collection, deleteDoc } from "firebase/firestore";
 import { CollectionReference, doc, setDoc } from "firebase/firestore";
 
 function deserializeBook(book: IBookData): IBook {
