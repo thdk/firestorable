@@ -1,4 +1,4 @@
-import type { Firestore } from "firebase/firestore";
+import type { CollectionReference, Firestore } from "firebase/firestore";
 
 import { observable, action, transaction, computed, reaction, makeObservable } from "mobx";
 
@@ -6,7 +6,7 @@ import { Collection, ICollectionDependencies, ICollectionOptions } from "../../c
 import { Doc } from "../../document";
 
 export interface StoreOptions<T = any, K = T> {
-    collection: string,
+    collection: string | CollectionReference<K>,
     collectionDependencies?: ICollectionDependencies,
     collectionOptions?: ICollectionOptions<T, K>,
     createNewDocumentDefaults?(overrideDefaultsWith?: Partial<T>): Partial<T> | Promise<Partial<T>>,
