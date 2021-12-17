@@ -17,9 +17,12 @@ import {
     deleteDoc,
     doc,
     Firestore,
+    getDocs,
     onSnapshot,
     PartialWithFieldValue,
+    query as firestoryQuery,
     Query,
+    QueryConstraint,
     QuerySnapshot,
     SetOptions,
     updateDoc,
@@ -378,6 +381,26 @@ export class Collection<T, K = T> {
                     return id;
                 })
         }));
+    }
+
+    /**
+     * Query the collection manually
+     * @param constraints 
+     * @returns 
+     */
+    public queryAsync(...constraints: QueryConstraint[]) {
+        const q = firestoryQuery(this.collectionRef, ...constraints);
+
+        return getDocs(q)
+            .then((querySnapshot) => {
+                const docs: T[] = [];
+
+                querySnapshot.forEach((doc) => {
+                    docs.push(this.deserialize(doc.data()));
+                });
+
+                return docs;
+            });
     }
 
     // TODO: when realtime updates is disabled, we must manually update the docs!

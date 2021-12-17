@@ -3,6 +3,7 @@ import { Collection, ICollectionOptions, FetchMode, RealtimeMode } from "../..";
 import { logger, addItemInBatch } from "../../__test-utils__";
 
 import { CollectionReference, collection, writeBatch, setDoc, doc, addDoc, deleteDoc, query, where } from "firebase/firestore";
+import { waitFor } from "@testing-library/dom";
 
 describe("realtime mode", () => {
     let booksCollection: Collection<{ value: string }>;
@@ -54,14 +55,15 @@ describe("realtime mode", () => {
         afterEach(() => booksCollection.dispose());
 
         describe("when documents are changed while watching the collection", () => {
-            test('it should update documents in local docs', () => {
-                return setDoc(doc(collectionRef, "id1"), {
+            test('it should update documents in local docs', async () => {
+                await setDoc(doc(collectionRef, "id1"), {
                     value: "B"
-                }).then(() => {
-                    const doc = booksCollection.get("id1");
-                    expect(doc).toBeDefined();
+                });
 
-                    expect(doc!.data!.value).toBe("B");
+                const document = booksCollection.get("id1");
+                expect(document).toBeDefined();
+                await waitFor(() => {
+                    expect(document!.data!.value).toBe("B");
                 });
             });
         });
@@ -113,45 +115,48 @@ describe("realtime mode", () => {
 
                 test('it should delete document in local docs', () => {
                     // Add one more document so we are not removing the last one (see next test)
-                    return addDoc(collectionRef, { value: "A" }).then(() => {
+                    return addDoc(collectionRef, { value: "A" }).then(async () => {
                         // Verify document to be deleted exists
                         const document = booksCollection.get("id1");
                         expect(document).toBeDefined();
 
-                        return deleteDoc(doc(collectionRef, "id1"))
-                            .then(() => {
-                                // Verify if document has been deleted in local dictionary
-                                const doc = booksCollection.get("id1");
-                                expect(doc).toBeUndefined();
-                            });
-                    });
-                });
+                        await deleteDoc(doc(collectionRef, "id1"));
 
-                /** When deleting last document of collection, an emtpy snapshot is received instead of a snapshot with type = deleted */
-                test('it should delete document in local docs even if its the last one', () => {
-                    // Verify document to be deleted exists
-                    const documemt = booksCollection.get("id1");
-                    expect(documemt).toBeDefined();
 
-                    return deleteDoc(doc(collectionRef, "id1"))
-                        .then(() => {
+                        await waitFor(() => {
                             // Verify if document has been deleted in local dictionary
                             const doc = booksCollection.get("id1");
                             expect(doc).toBeUndefined();
                         });
+                    });
+                });
+
+                /** When deleting last document of collection, an emtpy snapshot is received instead of a snapshot with type = deleted */
+                test('it should delete document in local docs even if its the last one', async () => {
+                    // Verify document to be deleted exists
+                    const documemt = booksCollection.get("id1");
+                    expect(documemt).toBeDefined();
+
+                    await deleteDoc(doc(collectionRef, "id1"));
+
+                    await waitFor(() => {
+                        // Verify if document has been deleted in local dictionary
+                        const doc = booksCollection.get("id1");
+                        expect(doc).toBeUndefined();
+                    });
                 });
             });
 
         });
 
         describe("when documents are added while watching the collection", () => {
-            test('it should add documents in local docs', () => {
-                return setDoc(doc(collectionRef, "id3"), { value: "C" })
-                    .then(() => {
-                        // Verify if document has been added to local dictionary
-                        const doc = booksCollection.get("id3");
-                        expect(doc).toBeDefined();
-                    });
+            test('it should add documents in local docs', async () => {
+                await setDoc(doc(collectionRef, "id3"), { value: "C" });
+
+                await waitFor(() => {
+                    const doc = booksCollection.get("id3");
+                    expect(doc).toBeDefined();
+                });
             });
         });
     });
