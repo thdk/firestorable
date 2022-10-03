@@ -97,9 +97,7 @@ export class Collection<T, K = T> {
     private readonly fetchMode: FetchMode;
 
     private snapshotDisposable?: () => void;
-    private queryReactionDisposable?: () => void;
-    private onBecomeObservedDisposable?: () => void;
-    private onBecomeUnobservedDisposable?: () => void;
+    private disposables: (() => void)[] = [];
 
     private readonly deserialize: (firestoreData: K) => T;
     private readonly serialize: (appData: Partial<T> | null) => PartialWithFieldValue<K>;
@@ -160,22 +158,24 @@ export class Collection<T, K = T> {
         this.logger = logger;
 
         if (this.fetchMode !== FetchMode.manual || this.realtimeMode === RealtimeMode.on) {
-            this.queryReactionDisposable = reaction(() => this.query, () => {
-                this.log("Received new query");
+            this.disposables.push(
+                reaction(() => this.query, () => {
+                    this.log("Received new query");
 
-                // New query only needs to trigger fetch docs again if the collection is currently fetched
-                // The documents will be fetched later with the new query when manually / automatically fetching
-                if (this.isFetched) {
-                    this.getDocs();
-                }
-            });
+                    // New query only needs to trigger fetch docs again if the collection is currently fetched
+                    // The documents will be fetched later with the new query when manually / automatically fetching
+                    if (this.isFetched) {
+                        this.getDocs();
+                    }
+                })
+            );
 
             if (this.fetchMode === FetchMode.auto) {
-                this.onBecomeObservedDisposable = onBecomeObserved(this.docsContainer, "docs", this.onObservedStatusChanged.bind(this, true));
-                this.onBecomeUnobservedDisposable = onBecomeUnobserved(this.docsContainer, "docs", this.onObservedStatusChanged.bind(this, false));
+                this.disposables.push(onBecomeObserved(this.docsContainer, "docs", this.onObservedStatusChanged.bind(this, true)));
+                this.disposables.push(onBecomeUnobserved(this.docsContainer, "docs", this.onObservedStatusChanged.bind(this, false)));
 
-                this.onBecomeObservedDisposable = onBecomeObserved(this, "isFetched", this.onObservedStatusChanged.bind(this, true));
-                this.onBecomeUnobservedDisposable = onBecomeUnobserved(this, "isFetched", this.onObservedStatusChanged.bind(this, false));
+                this.disposables.push(onBecomeObserved(this, "isFetched", this.onObservedStatusChanged.bind(this, true)));
+                this.disposables.push(onBecomeUnobserved(this, "isFetched", this.onObservedStatusChanged.bind(this, false)));
             }
         }
 
@@ -425,20 +425,11 @@ export class Collection<T, K = T> {
         this.cancelSnapshotListener();
         this.clear();
 
-        if (this.queryReactionDisposable) {
-            this.queryReactionDisposable();
-            this.queryReactionDisposable = undefined;
-        }
-
-        if (this.onBecomeObservedDisposable) {
-            this.onBecomeObservedDisposable();
-            this.onBecomeObservedDisposable = undefined;
-        }
-
-        if (this.onBecomeUnobservedDisposable) {
-            this.onBecomeUnobservedDisposable();
-            this.onBecomeUnobservedDisposable = undefined;
-        }
+        this.disposables = this.disposables
+            .reduce((p, c) => {
+                c();
+                return p;
+            }, []);
     }
 
     private cancelSnapshotListener(shouldLog = true) {
