@@ -41,7 +41,7 @@
     "mobx": ">= 6",
     "firebase": ">= 9",
     "@firebase/rules-unit-testing": "^2",
-    "firebase-admin": "^9"
+    "firebase-admin": ">= 9"
   },
   "dependencies": {},
   "devDependencies": {
