@@ -164,7 +164,8 @@ export class Collection<T, K = T> {
 
                     // New query only needs to trigger fetch docs again if the collection is currently fetched
                     // The documents will be fetched later with the new query when manually / automatically fetching
-                    if (this.isFetched) {
+                    // In case the initial query was already loading but not yet fetched, starting a new one will dispose the initial query
+                    if (this.isFetched || this.isLoading) {
                         this.getDocs();
                     }
                 })
