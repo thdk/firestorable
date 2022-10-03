@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v2.2.0](https://github.com/thdk/firestorable/compare/v2.1.1...v2.2.0)
+## [v2.2.1](https://github.com/thdk/firestorable/compare/v2.2.0...v2.2.1)
+
+### Commits
+
+- chore: update to node +v16 [`7886c9d`](https://github.com/thdk/firestorable/commit/7886c9d470ea0240bfba21e86e1f96c9bfecbb18)
+- perf: fix possible memory leak [`bb8707e`](https://github.com/thdk/firestorable/commit/bb8707e3654bdbbefe5531c7ea2d00cbeaf545c9)
+- fix: refetch collection when query changes during initial fetch [`b6ce3dd`](https://github.com/thdk/firestorable/commit/b6ce3dd626b8cb84db7f353727968d66362a7e56)
+- chore: update peer dependency version of firebase-admin [`60ba53a`](https://github.com/thdk/firestorable/commit/60ba53a6378d6fa5e8d5d5483aeb9c0a8f45ebf0)
+
+## [v2.2.0](https://github.com/thdk/firestorable/compare/v2.1.1...v2.2.0) - 2021-12-17
 
 ### Commits
 
